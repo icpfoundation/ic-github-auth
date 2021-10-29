@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"path"
 
@@ -61,23 +60,16 @@ func DataStores() {
 	Infof("UserInfoDB: %+v", UserInfoDB)
 }
 
-func SaveAccessToken(ctx context.Context, state string, auth AuthResponse) error {
+func SaveAccessToken(ctx context.Context, state string, authResponse []byte) error {
 	key := datastore.NewKey(state)
 	ishas, err := UserInfoDB.Has(ctx, key)
 	if err != nil {
-		Errorf("entrys: has %s", err)
 		return err
 	}
 
 	if !ishas {
-		in, err := json.Marshal(auth)
+		err = UserInfoDB.Put(ctx, key, authResponse)
 		if err != nil {
-			return err
-		}
-
-		err = UserInfoDB.Put(ctx, key, in)
-		if err != nil {
-			Infof("entrys: begin %s", err)
 			return err
 		}
 		Infof("write user info for state: %s", key.String())
@@ -86,4 +78,22 @@ func SaveAccessToken(ctx context.Context, state string, auth AuthResponse) error
 	}
 
 	return nil
+}
+
+func ReadAccessToken(ctx context.Context, state string) ([]byte, error) {
+	key := datastore.NewKey(state)
+	ishas, err := UserInfoDB.Has(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	if ishas {
+		token, err := UserInfoDB.Get(ctx, key)
+		if err != nil {
+			return nil, err
+		}
+		return token, nil
+	}
+
+	return nil, nil
 }
