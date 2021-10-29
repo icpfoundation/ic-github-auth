@@ -63,7 +63,8 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 			return
 		}
 
-		c.JSON(200, nil)
+		// c.JSON(200, nil)
+		c.HTML(200, "index.html", nil)
 	})
 }
 
