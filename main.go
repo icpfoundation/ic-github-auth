@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"path"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mitchellh/go-homedir"
 )
 
 const repoPath = "~/.icauth"
@@ -31,15 +29,15 @@ func main() {
 func setupAuthServer() {
 	r := gin.Default()
 
-	repodir, err := homedir.Expand(repoPath)
-	if err != nil {
-		return
-	}
+	// repodir, err := homedir.Expand(repoPath)
+	// if err != nil {
+	// 	return
+	// }
 
-	file := path.Join(repodir, "index.tmpl")
-	Infof("file: %s", file)
+	// file := path.Join(repodir, "index.tmpl")
+	// Infof("file: %s", file)
 
-	r.LoadHTMLFiles("index.tmpl")
+	// r.LoadHTMLFiles("index.tmpl")
 
 	handleAccessTokenRedirectAPI(r)
 
@@ -85,7 +83,10 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 
 		// r.LoadHTMLFiles(file)
 
-		c.HTML(200, "index.tmpl", nil)
+		// c.HTML(200, "index.tmpl", nil)
+
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.String(200, `<p>html代码</p>`)
 	})
 }
 
@@ -97,11 +98,11 @@ func getAccessToken(code string, redirect_uri string, state string) error {
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, nil)
-
 	if err != nil {
 		Errorf("new request err: %s", err.Error())
 		return err
 	}
+
 	res, err := client.Do(req)
 	if err != nil {
 		Errorf("do request err: %s", err.Error())
