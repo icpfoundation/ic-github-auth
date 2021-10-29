@@ -15,7 +15,7 @@ const client_id = "Iv1.018aba55453994ac"
 const client_secret = "e6a5b65152a4dca9754fa2e13df80f3c087019e7"
 
 var accessTokenUrl = "https://github.com/login/oauth/access_token"
-var redirect_uri = "http://54.244.200.160/:9091/public/auth/"
+var redirect_uri = "http://54.244.200.160:9091/public/auth/"
 var state = "xxxxxx"
 
 func main() {
