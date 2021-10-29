@@ -86,7 +86,32 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 		// c.HTML(200, "index.tmpl", nil)
 
 		c.Header("Content-Type", "text/html; charset=utf-8")
-		c.String(200, `<p>html代码</p>`)
+		c.String(200, `<!DOCTYPE html>
+		<html lang="en">
+		
+		<head>
+			<meta charset="UTF-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Chain-cloud</title>
+		
+			<style type="text/css">
+				.bg {
+					width: 20%;
+					margin: 300px auto;
+					text-align: center;
+				}
+			</style>
+		</head>
+		
+		<body>
+			<div class="bg">
+				<img src="https://storageapi.fleek.co/lyswifter-team-bucket/chain-cloud/nav_logo@2x.png" alt="logo">
+				<h3 class="authed">Authorized</h3>
+			</div>
+		</body>
+		
+		</html>`)
 	})
 }
 
