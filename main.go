@@ -84,8 +84,6 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 		Infof("file: %s", file)
 
 		r.LoadHTMLFiles(file)
-
-		r.LoadHTMLFiles("./index.html")
 		c.HTML(200, file, nil)
 	})
 }
