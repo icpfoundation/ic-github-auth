@@ -41,7 +41,7 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 		Infof("get access token redirect url: %s", c.Request.URL.String())
 
 		r.LoadHTMLFiles("./index.html")
-		c.HTML(200, "index.html", nil)
+		c.HTML(200, "./index.html", nil)
 	})
 }
 
@@ -66,7 +66,7 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 		}
 
 		r.LoadHTMLFiles("./index.html")
-		c.HTML(200, "index.html", nil)
+		c.HTML(200, "./index.html", nil)
 	})
 }
 
