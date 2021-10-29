@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mitchellh/go-homedir"
 )
 
 const repoPath = "~/.icauth"
@@ -29,6 +31,14 @@ func main() {
 func setupAuthServer() {
 	r := gin.Default()
 
+	repodir, err := homedir.Expand(repoPath)
+	if err != nil {
+		return
+	}
+
+	file := path.Join(repodir, "index.tmpl")
+	Infof("file: %s", file)
+
 	r.LoadHTMLFiles("index.tmpl")
 
 	handleAccessTokenRedirectAPI(r)
@@ -41,15 +51,6 @@ func setupAuthServer() {
 func handleAccessTokenRedirectAPI(r *gin.Engine) {
 	r.GET("/public/token", func(c *gin.Context) {
 		Infof("get access token redirect url: %s", c.Request.URL.String())
-
-		// repodir, err := homedir.Expand(repoPath)
-		// if err != nil {
-		// 	return
-		// }
-
-		// file := path.Join(repodir, "index.html")
-		// Infof("file: %s", file)
-
 		c.HTML(200, "index.tmpl", nil)
 	})
 }
