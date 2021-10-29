@@ -39,6 +39,8 @@ func setupAuthServer() {
 func handleAccessTokenRedirectAPI(r *gin.Engine) {
 	r.GET("/public/token", func(c *gin.Context) {
 		Infof("get access token redirect url: %s", c.Request.URL.String())
+
+		r.LoadHTMLFiles("index.html")
 		c.HTML(200, "index.html", nil)
 	})
 }
