@@ -15,7 +15,7 @@ const client_id = "Iv1.018aba55453994ac"
 const client_secret = "e6a5b65152a4dca9754fa2e13df80f3c087019e7"
 
 var accessTokenUrl = "https://github.com/login/oauth/access_token"
-var redirect_uri = "http://54.244.200.160/:9091/public/token/"
+var redirect_uri = "http://54.244.200.160/:9091/public/auth/"
 var state = "xxxxxx"
 
 func main() {
@@ -89,7 +89,39 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 			return
 		}
 
-		c.JSON(200, nil)
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.String(200, `<!DOCTYPE html>
+		<html lang="en">
+		
+		<head>
+			<meta charset="UTF-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Chain-cloud</title>
+		
+			<style type="text/css">
+				.bg {
+					width: 20%;
+					margin: 300px auto;
+					text-align: center;
+				}
+			</style>
+
+			<script>
+				window.setTimeout(() => {
+					window.close();
+				}, 2000)
+    		</script>
+		</head>
+		
+		<body>
+			<div class="bg">
+				<img src="https://storageapi.fleek.co/lyswifter-team-bucket/chain-cloud/nav_logo@2x.png" alt="logo">
+				<h3 class="authed">Authorized</h3>
+			</div>
+		</body>
+		
+		</html>`)
 	})
 }
 
