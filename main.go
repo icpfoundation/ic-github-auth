@@ -15,7 +15,7 @@ const client_id = "Iv1.018aba55453994ac"
 const client_secret = "e6a5b65152a4dca9754fa2e13df80f3c087019e7"
 
 var accessTokenUrl = "https://github.com/login/oauth/access_token"
-var redirect_uri = "http://54.244.200.160/:9091/public/auth/"
+var redirect_uri = "http://54.244.200.160/:9091/public/token/"
 var state = "xxxxxx"
 
 func main() {
@@ -29,16 +29,6 @@ func main() {
 func setupAuthServer() {
 	r := gin.Default()
 
-	// repodir, err := homedir.Expand(repoPath)
-	// if err != nil {
-	// 	return
-	// }
-
-	// file := path.Join(repodir, "index.tmpl")
-	// Infof("file: %s", file)
-
-	// r.LoadHTMLFiles("index.tmpl")
-
 	handleAccessTokenRedirectAPI(r)
 
 	handleGithubAuthorizeAPI(r)
@@ -49,42 +39,6 @@ func setupAuthServer() {
 func handleAccessTokenRedirectAPI(r *gin.Engine) {
 	r.GET("/public/token", func(c *gin.Context) {
 		Infof("get access token redirect url: %s", c.Request.URL.String())
-		c.HTML(200, "index.tmpl", nil)
-	})
-}
-
-func handleGithubAuthorizeAPI(r *gin.Engine) {
-	r.GET("/public/auth", func(c *gin.Context) {
-		code := c.Query("code")
-
-		Infof("get authorize redirect(%s): %s", c.Request.URL.String(), code)
-
-		if code == "" {
-			c.JSON(500, gin.H{
-				"status":  "Err",
-				"message": "could not get auth code",
-			})
-			return
-		}
-
-		err := getAccessToken(code, redirect_uri, state)
-		if err != nil {
-			Errorf("get access token: %s", err.Error())
-			return
-		}
-
-		// repodir, err := homedir.Expand(repoPath)
-		// if err != nil {
-		// 	return
-		// }
-
-		// file := path.Join(repodir, "index.html")
-		// Infof("file: %s", file)
-
-		// r.LoadHTMLFiles(file)
-
-		// c.HTML(200, "index.tmpl", nil)
-
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.String(200, `<!DOCTYPE html>
 		<html lang="en">
@@ -115,11 +69,33 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 	})
 }
 
+func handleGithubAuthorizeAPI(r *gin.Engine) {
+	r.GET("/public/auth", func(c *gin.Context) {
+		code := c.Query("code")
+
+		Infof("get authorize redirect(%s): %s", c.Request.URL.String(), code)
+
+		if code == "" {
+			c.JSON(500, gin.H{
+				"status":  "Err",
+				"message": "could not get auth code",
+			})
+			return
+		}
+
+		err := getAccessToken(code, redirect_uri, state)
+		if err != nil {
+			Errorf("get access token: %s", err.Error())
+			return
+		}
+
+		c.JSON(200, nil)
+	})
+}
+
 func getAccessToken(code string, redirect_uri string, state string) error {
 	url := fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&redirect_uri=%s&state=%s", accessTokenUrl, client_id, client_secret, code, redirect_uri, state)
 	method := "POST"
-
-	Infof("access_token url: %s", url)
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, nil)

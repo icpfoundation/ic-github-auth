@@ -81,6 +81,8 @@ func SaveAccessToken(ctx context.Context, state string, auth AuthResponse) error
 			return err
 		}
 		Infof("write user info for state: %s", key.String())
+	} else {
+		Infof("token is already exist for; %s", key.String())
 	}
 
 	return nil
