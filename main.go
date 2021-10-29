@@ -15,7 +15,7 @@ const client_id = "Iv1.018aba55453994ac"
 const client_secret = "e6a5b65152a4dca9754fa2e13df80f3c087019e7"
 
 var accessTokenUrl = "https://github.com/login/oauth/access_token"
-var redirect_uri = "http://54.244.200.160/:9091/public/token/"
+var redirect_uri = "http://54.244.200.160/:9091/public/auth/"
 var state = "xxxxxx"
 
 func main() {
@@ -40,7 +40,7 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 	r.GET("/public/token", func(c *gin.Context) {
 		Infof("get access token redirect url: %s", c.Request.URL.String())
 
-		r.LoadHTMLFiles("index.html")
+		r.LoadHTMLFiles("./index.html")
 		c.HTML(200, "index.html", nil)
 	})
 }
@@ -65,7 +65,7 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 			return
 		}
 
-		r.LoadHTMLFiles("index.html")
+		r.LoadHTMLFiles("./index.html")
 		c.HTML(200, "index.html", nil)
 	})
 }
