@@ -45,14 +45,6 @@ func Cors() gin.HandlerFunc {
 func setupAuthServer() {
 	r := gin.Default()
 
-	// corsConfig := cors.DefaultConfig()
-	// corsConfig.AllowAllOrigins = true
-	// corsConfig.AddAllowMethods("OPTIONS")
-	// corsConfig.AllowCredentials = true
-	// r.Use(cors.New(corsConfig))
-
-	// r.Use(Cors())
-
 	handleAccessTokenRedirectAPI(r)
 	handleGithubAuthorizeAPI(r)
 
@@ -78,6 +70,15 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
+		code, err := ReadInstallCode(context.TODO(), state)
+		if err != nil {
+			c.JSON(502, gin.H{
+				"status":  "Err",
+				"message": "could not get installation code",
+			})
+			return
+		}
+
 		ret, err := ReadAccessToken(context.TODO(), state)
 		if err != nil {
 			c.JSON(502, gin.H{
@@ -99,6 +100,7 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			"statue":  "Ok",
 			"message": "success",
 			"token":   string(ret),
+			"code":    string(code),
 		})
 	})
 }
@@ -107,6 +109,7 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 	r.GET("/public/auth", func(c *gin.Context) {
 		code := c.Query("code")
 		state := c.Query("state")
+		installationId := c.Query("installation_id")
 
 		Infof("get authorize redirect(%s): %s", c.Request.URL.String(), code)
 
@@ -118,7 +121,12 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 			return
 		}
 
-		err := getAccessToken(code, redirect_uri, state)
+		err := SaveInstallCode(context.TODO(), state, installationId)
+		if err != nil {
+			return
+		}
+
+		err = getAccessToken(code, redirect_uri, state)
 		if err != nil {
 			Errorf("get access token: %s", err.Error())
 			return

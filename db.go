@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
 
@@ -93,6 +94,35 @@ func ReadAccessToken(ctx context.Context, state string) ([]byte, error) {
 			return nil, err
 		}
 		return token, nil
+	}
+
+	return nil, nil
+}
+
+func SaveInstallCode(ctx context.Context, state string, code string) error {
+	key := datastore.NewKey(fmt.Sprintf("%s-installationCode", state))
+
+	err := UserInfoDB.Put(ctx, key, []byte(code))
+	if err != nil {
+		return err
+	}
+	Infof("write installation code for state: %s", key.String())
+	return nil
+}
+
+func ReadInstallCode(ctx context.Context, state string) ([]byte, error) {
+	key := datastore.NewKey(fmt.Sprintf("%s-installationCode", state))
+	ishas, err := UserInfoDB.Has(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	if ishas {
+		code, err := UserInfoDB.Get(ctx, key)
+		if err != nil {
+			return nil, err
+		}
+		return code, nil
 	}
 
 	return nil, nil
