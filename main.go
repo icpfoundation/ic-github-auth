@@ -96,6 +96,8 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
+		Infof("read installation code: %s token: %s", string(code), string(ret))
+
 		c.JSON(200, gin.H{
 			"statue":  "Ok",
 			"message": "success",

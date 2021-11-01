@@ -63,21 +63,12 @@ func DataStores() {
 
 func SaveAccessToken(ctx context.Context, state string, authResponse []byte) error {
 	key := datastore.NewKey(state)
-	ishas, err := UserInfoDB.Has(ctx, key)
+	err := UserInfoDB.Put(ctx, key, authResponse)
 	if err != nil {
 		return err
 	}
 
-	if !ishas {
-		err = UserInfoDB.Put(ctx, key, authResponse)
-		if err != nil {
-			return err
-		}
-		Infof("write user info for state: %s", key.String())
-	} else {
-		Infof("token is already exist for; %s", key.String())
-	}
-
+	Infof("write user authorization info for state: %s", key.String())
 	return nil
 }
 
@@ -95,7 +86,6 @@ func ReadAccessToken(ctx context.Context, state string) ([]byte, error) {
 		}
 		return token, nil
 	}
-
 	return nil, nil
 }
 
