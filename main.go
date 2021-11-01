@@ -51,7 +51,7 @@ func setupAuthServer() {
 	// corsConfig.AllowCredentials = true
 	// r.Use(cors.New(corsConfig))
 
-	r.Use(Cors())
+	// r.Use(Cors())
 
 	handleAccessTokenRedirectAPI(r)
 	handleGithubAuthorizeAPI(r)
@@ -87,6 +87,12 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			})
 			return
 		}
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
+		c.Header("Access-Control-Max-Age", "3628800")
 
 		c.JSON(200, gin.H{
 			"statue":  "Ok",
