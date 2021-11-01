@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,13 +25,33 @@ func main() {
 	setupAuthServer()
 }
 
+func Cors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		method := c.Request.Method
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
+		c.Header("Access-Control-Allow-Credentials", "true")
+
+		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
+
+		c.Next()
+	}
+}
+
 func setupAuthServer() {
 	r := gin.Default()
 
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
-	corsConfig.AddAllowMethods("OPTIONS")
-	r.Use(cors.New(corsConfig))
+	// corsConfig := cors.DefaultConfig()
+	// corsConfig.AllowAllOrigins = true
+	// corsConfig.AddAllowMethods("OPTIONS")
+	// corsConfig.AllowCredentials = true
+	// r.Use(cors.New(corsConfig))
+
+	r.Use(Cors())
 
 	handleAccessTokenRedirectAPI(r)
 	handleGithubAuthorizeAPI(r)
