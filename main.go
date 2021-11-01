@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,7 @@ var accessTokenUrl = "https://github.com/login/oauth/access_token"
 var redirect_uri = "http://54.244.200.160:9091/public/auth/"
 
 func main() {
-	Infof("This is the internet computer github authorize server")
+	Infof("This is the internet computer github app authorization server")
 
 	DataStores()
 
@@ -28,8 +29,9 @@ func main() {
 func setupAuthServer() {
 	r := gin.Default()
 
-	handleAccessTokenRedirectAPI(r)
+	r.Use(cors.Default())
 
+	handleAccessTokenRedirectAPI(r)
 	handleGithubAuthorizeAPI(r)
 
 	r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
