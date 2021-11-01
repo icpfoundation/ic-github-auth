@@ -64,11 +64,18 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 		Infof("get access token url: %s", c.Request.URL.String())
 		state := c.Query("state")
 
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
+		c.Header("Access-Control-Max-Age", "3628800")
+
 		if state == "" {
 			c.JSON(502, gin.H{
 				"status":  "Err",
 				"message": "state must not nil",
 			})
+			return
 		}
 
 		ret, err := ReadAccessToken(context.TODO(), state)
@@ -87,12 +94,6 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			})
 			return
 		}
-
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH")
-		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
-		c.Header("Access-Control-Max-Age", "3628800")
 
 		c.JSON(200, gin.H{
 			"statue":  "Ok",
