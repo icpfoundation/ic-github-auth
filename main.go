@@ -29,7 +29,10 @@ func main() {
 func setupAuthServer() {
 	r := gin.Default()
 
-	r.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AddAllowMethods("OPTIONS")
+	r.Use(cors.New(corsConfig))
 
 	handleAccessTokenRedirectAPI(r)
 	handleGithubAuthorizeAPI(r)
