@@ -8,3 +8,8 @@ type AuthResponse struct {
 	Scope                string `json:"scope"`
 	TokenType            string `json:"token_type"`
 }
+
+type CmdOutput struct {
+	TaskID string
+	Logs   []string
+}

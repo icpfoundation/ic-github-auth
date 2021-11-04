@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -40,37 +41,73 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		timing := time.Now().Unix()
 		repo, err := homedir.Expand(repoPath)
 		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 		targetpath := path.Join(repo, "repository", reponame, fmt.Sprintf("%d", timing))
 		err = mkDir(targetpath)
 		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		// 3. clone target repo and branch source code to target directory
 		clonecmd := exec.Command("git", "clone", "-b", branch, repourl, targetpath)
 		fmt.Printf("clonecmd: %v\n", clonecmd)
-		clonecmd.Stdout = os.Stdout
 		clonecmd.Stderr = os.Stderr
+		clonecmd.Stdout = os.Stdout
 		err = clonecmd.Run()
 		if err != nil {
-			fmt.Printf("err: %s\n", err.Error())
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		// 4. if using default dfx to create a canister
-		deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
-		deploycmd.Dir = targetpath
-		result, err := deploycmd.CombinedOutput()
+		var retLog string
+		switch framework {
+		case "dfx":
+			ret, err := deployWithDfx(targetpath)
+			if err != nil {
+				retbyte, err := buildOutLogs(string(ret))
+				if err != nil {
+					return
+				}
+
+				c.String(http.StatusAccepted, string(retbyte))
+				return
+			}
+			retLog = string(ret)
+		default:
+		}
+
+		// Infof("retLog: %d", len(strings.Split(retLog, "\n")))
+
+		retbyte, err := buildOutLogs(string(retLog))
 		if err != nil {
-			fmt.Printf("err: %s\n", err.Error())
 			return
 		}
-
-		Infof("deploy log: %s", string(result))
 
 		// n. recall
-		c.String(http.StatusOK, "tigger build successfully")
+		c.String(http.StatusOK, string(retbyte))
 	})
+}
+
+func deployWithDfx(path string) ([]byte, error) {
+	// 4. if using default dfx to create a canister
+	deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
+	deploycmd.Dir = path
+
+	var b bytes.Buffer
+	deploycmd.Stdout = &b
+	deploycmd.Stderr = &b
+	err := deploycmd.Run()
+	if err != nil {
+		fmt.Printf("dfx(%s) err: %s ret: %s\n", path, err.Error(), b.String())
+		return b.Bytes(), err
+	}
+
+	return b.Bytes(), nil
+}
+
+func deployWithHugo(path string) {
+
 }
