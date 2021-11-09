@@ -65,7 +65,18 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		var retLog string
 		switch framework {
 		case "dfx":
-			ret, err := deployWithDfx(targetpath)
+			ret, err := startLocalNetworkWithDfx(targetpath)
+			if err != nil {
+				retbyte, err := buildOutLogs(string(ret))
+				if err != nil {
+					return
+				}
+
+				c.String(http.StatusAccepted, string(retbyte))
+				return
+			}
+
+			ret, err = deployWithDfx(targetpath)
 			if err != nil {
 				retbyte, err := buildOutLogs(string(ret))
 				if err != nil {
