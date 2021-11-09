@@ -91,8 +91,25 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 	})
 }
 
+func startLocalNetworkWithDfx(path string) ([]byte, error) {
+	// 3. start local network
+	startcmd := exec.Command("dfx", "start", "--background")
+	startcmd.Dir = path
+
+	var b bytes.Buffer
+	startcmd.Stdout = &b
+	startcmd.Stderr = &b
+	err := startcmd.Run()
+	if err != nil {
+		fmt.Printf("dfx(%s) err: %s ret: %s\n", path, err.Error(), b.String())
+		return b.Bytes(), err
+	}
+	return b.Bytes(), nil
+}
+
 func deployWithDfx(path string) ([]byte, error) {
 	// 4. if using default dfx to create a canister
+	// deploycmd := exec.Command("dfx", "deploy")
 	deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
 	deploycmd.Dir = path
 
@@ -104,7 +121,6 @@ func deployWithDfx(path string) ([]byte, error) {
 		fmt.Printf("dfx(%s) err: %s ret: %s\n", path, err.Error(), b.String())
 		return b.Bytes(), err
 	}
-
 	return b.Bytes(), nil
 }
 
