@@ -70,6 +70,7 @@ func setupAuthServer() {
 	handleAccessTokenRedirectAPI(r)
 	handleGithubAuthorizeAPI(r)
 	handleTiggerBuildAPI(r)
+	handleDeployLogAPI(r)
 
 	// r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 

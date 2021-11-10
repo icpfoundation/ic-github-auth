@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,10 +13,48 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hpcloud/tail"
 	"github.com/mitchellh/go-homedir"
 )
 
-var addr = "http://chaincloud.skyipfs.com:9091"
+func handleDeployLogAPI(r *gin.Engine) {
+	r.GET("public/logs", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
+		c.Header("Access-Control-Max-Age", "3628800")
+
+		filename := c.Query("file")
+		if filename == "" {
+			c.String(http.StatusInternalServerError, errors.New("filename must provide").Error())
+		}
+
+		reponame := c.Query("reponame")
+
+		///
+		repo, err := homedir.Expand(repoPath)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		filepath := path.Join(repo, "repository", reponame, "logs", filename)
+		t, err := tail.TailFile(filepath, tail.Config{Follow: true, MaxLineSize: 1})
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		var ret = ""
+		for line := range t.Lines {
+			fmt.Println(line.Text)
+			ret += line.Text
+		}
+
+		c.String(http.StatusOK, ret)
+	})
+}
 
 func handleTiggerBuildAPI(r *gin.Engine) {
 	r.GET("public/build", func(c *gin.Context) {
