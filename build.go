@@ -120,8 +120,8 @@ func startLocalNetworkWithDfx(path string) ([]byte, error) {
 
 func deployWithDfx(path string) ([]byte, error) {
 	// 4. if using default dfx to create a canister
-	deploycmd := exec.Command("dfx", "deploy")
-	// deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
+	// deploycmd := exec.Command("dfx", "deploy")
+	deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
 	deploycmd.Dir = path
 
 	var b bytes.Buffer
