@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hpcloud/tail"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -40,19 +39,19 @@ func handleDeployLogAPI(r *gin.Engine) {
 		}
 
 		filepath := path.Join(repo, "repository", reponame, "logs", filename)
-		t, err := tail.TailFile(filepath, tail.Config{Follow: true})
+
+		tailCmd := exec.Command("tail", "-n", "2", filepath)
+		var b bytes.Buffer
+		tailCmd.Stderr = &b
+		tailCmd.Stdout = &b
+
+		tailCmd.Run()
 		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
+			fmt.Printf("tail err: %s", err.Error())
 			return
 		}
 
-		var ret = ""
-		for line := range t.Lines {
-			fmt.Println(line.Text)
-			ret += line.Text
-		}
-
-		c.String(http.StatusOK, ret)
+		c.String(http.StatusOK, b.String())
 	})
 }
 
