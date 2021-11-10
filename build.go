@@ -42,10 +42,11 @@ func handleDeployLogAPI(r *gin.Engine) {
 		}
 
 		filepath := path.Join(repo, "repository", reponame, "logs", filename)
-		fmt.Printf("filepath: %s", filepath)
+		fmt.Printf("filepath: %s\n", filepath)
 
 		line := fmt.Sprintf("%s,%sp;", startline, endline)
 		tailCmd := exec.Command("sed", "-n", line, filepath)
+
 		var b bytes.Buffer
 		tailCmd.Stderr = &b
 		tailCmd.Stdout = &b
@@ -144,14 +145,14 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 				defer f.Close()
 
-				defer func() {
-					err := cleanCacheCmd(targetpath)
-					if err != nil {
-						return
-					}
+				// defer func() {
+				// 	err := cleanCacheCmd(targetpath)
+				// 	if err != nil {
+				// 		return
+				// 	}
 
-					fmt.Printf("clean cache at: %s ok", targetpath)
-				}()
+				// 	fmt.Printf("clean cache at: %s ok", targetpath)
+				// }()
 
 				for {
 					line, err := errReader.ReadString('\n')
