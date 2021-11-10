@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -74,12 +73,20 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			http.HandleFunc(fmt.Sprintf("%s/%d", "/public/log", connectionId), func(rw http.ResponseWriter, r *http.Request) {
 				var upgrader = websocket.Upgrader{}
 
+				var err error
 				c, err := upgrader.Upgrade(rw, r, nil)
 				if err != nil {
 					return
 				}
 
-				defer c.Close()
+				defer func() {
+					if err != nil {
+						fmt.Printf("end with err: %s", err.Error())
+					}
+
+					fmt.Println("end with no err")
+					c.Close()
+				}()
 
 				// 4. if using default dfx to create a canister
 				deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
@@ -100,6 +107,8 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 				errReader := bufio.NewReader(stderr)
 				outReader := bufio.NewReader(stdout)
 
+				fmt.Printf("conn: %+v", c)
+
 				for {
 					line, err := errReader.ReadBytes('\n')
 					if err == io.EOF {
@@ -112,7 +121,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 					err = c.WriteMessage(websocket.TextMessage, line)
 					if err != nil {
-						log.Println("write stderr:", err)
+						fmt.Printf("write stderr: %s", err)
 						break
 					}
 				}
@@ -129,12 +138,16 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 					err = c.WriteMessage(websocket.TextMessage, line)
 					if err != nil {
-						log.Println("write stdout:", err)
+						fmt.Printf("write stdout: %s", err)
 						break
 					}
 				}
 
+				fmt.Println("before wait")
+
 				deploycmd.Wait()
+
+				fmt.Println("after wait")
 			})
 
 			http.ListenAndServe(addr, nil)
