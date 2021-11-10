@@ -164,7 +164,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 					}
 
 					// write local
-					_, err = f.WriteString(line)
+					_, err = f.WriteString(fmt.Sprintf("[%s]	%s", time.Now().Format("2006-01-02 15:04:05.999"), line))
 					if err != nil {
 						break
 					}
@@ -181,7 +181,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 					}
 
 					// write local
-					_, err = f.WriteString(line)
+					_, err = f.WriteString(fmt.Sprintf("[%s]	%s", time.Now().Format("2006-01-02 15:04:05.999"), line))
 					if err != nil {
 						break
 					}
