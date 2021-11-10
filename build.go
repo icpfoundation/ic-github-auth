@@ -115,86 +115,87 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		var connectionId = time.Now().Unix()
-
 		switch framework {
 		case "dfx":
-			deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
-			deploycmd.Dir = targetpath
 
-			stderr, err := deploycmd.StderrPipe()
-			if err != nil {
-				return
-			}
+			go func() {
+				deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
+				deploycmd.Dir = targetpath
 
-			stdout, err := deploycmd.StdoutPipe()
-			if err != nil {
-				return
-			}
-
-			deploycmd.Start()
-
-			errReader := bufio.NewReader(stderr)
-			outReader := bufio.NewReader(stdout)
-
-			f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
-			if err != nil {
-				return
-			}
-
-			defer f.Close()
-
-			defer func() {
-				err := cleanCacheCmd(targetpath)
+				stderr, err := deploycmd.StderrPipe()
 				if err != nil {
 					return
 				}
 
-				fmt.Printf("clean cache at: %s ok", targetpath)
+				stdout, err := deploycmd.StdoutPipe()
+				if err != nil {
+					return
+				}
+
+				deploycmd.Start()
+
+				errReader := bufio.NewReader(stderr)
+				outReader := bufio.NewReader(stdout)
+
+				f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
+				if err != nil {
+					return
+				}
+
+				defer f.Close()
+
+				defer func() {
+					err := cleanCacheCmd(targetpath)
+					if err != nil {
+						return
+					}
+
+					fmt.Printf("clean cache at: %s ok", targetpath)
+				}()
+
+				for {
+					line, err := errReader.ReadString('\n')
+					if err == io.EOF {
+						break
+					}
+
+					if err != nil {
+						break
+					}
+
+					// write local
+					_, err = f.WriteString(line)
+					if err != nil {
+						break
+					}
+				}
+
+				for {
+					line, err := outReader.ReadString('\n')
+					if err == io.EOF {
+						break
+					}
+
+					if err != nil {
+						break
+					}
+
+					// write local
+					_, err = f.WriteString(line)
+					if err != nil {
+						break
+					}
+				}
+
+				deploycmd.Wait()
 			}()
-
-			for {
-				line, err := errReader.ReadString('\n')
-				if err == io.EOF {
-					break
-				}
-
-				if err != nil {
-					break
-				}
-
-				// write local
-				_, err = f.WriteString(line)
-				if err != nil {
-					break
-				}
-			}
-
-			for {
-				line, err := outReader.ReadString('\n')
-				if err == io.EOF {
-					break
-				}
-
-				if err != nil {
-					break
-				}
-
-				// write local
-				_, err = f.WriteString(line)
-				if err != nil {
-					break
-				}
-			}
-
-			deploycmd.Wait()
 		default:
 		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"statue":       "Ok",
 			"message":      "tigger build ok",
-			"connectionid": connectionId,
+			"connectionid": timing,
 		})
 	})
 }
