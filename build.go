@@ -67,9 +67,11 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
+		var connectionId = time.Now().Unix()
+
 		switch framework {
 		case "dfx":
-			http.HandleFunc("/public/log", func(rw http.ResponseWriter, r *http.Request) {
+			http.HandleFunc(fmt.Sprintf("%s/%d", "/public/log", connectionId), func(rw http.ResponseWriter, r *http.Request) {
 				var upgrader = websocket.Upgrader{}
 
 				c, err := upgrader.Upgrade(rw, r, nil)
@@ -142,7 +144,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		fmt.Printf("reach here")
 
 		// n. recall
-		c.String(http.StatusOK, fmt.Sprintf("tigger build ok at: %s", addr))
+		c.String(http.StatusOK, fmt.Sprintf("tigger build ok with: %d", connectionId))
 	})
 }
 
