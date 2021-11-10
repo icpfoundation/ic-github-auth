@@ -141,10 +141,11 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		default:
 		}
 
-		fmt.Printf("reach here")
-
-		// n. recall
-		c.String(http.StatusOK, fmt.Sprintf("tigger build ok with: %d", connectionId))
+		c.JSON(http.StatusOK, gin.H{
+			"statue":       "Ok",
+			"message":      "tigger build ok",
+			"connectionid": connectionId,
+		})
 	})
 }
 
