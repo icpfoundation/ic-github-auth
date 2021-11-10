@@ -94,14 +94,21 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			errReader := bufio.NewReader(stderr)
 			outReader := bufio.NewReader(stdout)
 
-			fmt.Printf("conn: %+v", c)
-
 			f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
 			if err != nil {
 				return
 			}
 
 			defer f.Close()
+
+			defer func() {
+				err := cleanCacheCmd(targetpath)
+				if err != nil {
+					return
+				}
+
+				fmt.Printf("clean cache at: %s ok", targetpath)
+			}()
 
 			for {
 				line, err := errReader.ReadString('\n')
@@ -147,6 +154,20 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			"connectionid": connectionId,
 		})
 	})
+}
+
+func cleanCacheCmd(path string) error {
+	cleanCmd := exec.Command("dfx", "cache", "delete")
+	cleanCmd.Dir = path
+
+	cleanCmd.Stderr = os.Stderr
+	cleanCmd.Stdout = os.Stdout
+	err := cleanCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func startLocalNetworkWithDfx(path string) ([]byte, error) {
