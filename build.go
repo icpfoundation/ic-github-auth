@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -10,8 +13,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/mitchellh/go-homedir"
 )
+
+var addr = "http://chaincloud.skyipfs.com:9091"
 
 func handleTiggerBuildAPI(r *gin.Engine) {
 	r.GET("public/build", func(c *gin.Context) {
@@ -53,7 +59,6 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 		// 3. clone target repo and branch source code to target directory
 		clonecmd := exec.Command("git", "clone", "-b", branch, repourl, targetpath)
-		fmt.Printf("clonecmd: %v\n", clonecmd)
 		clonecmd.Stderr = os.Stderr
 		clonecmd.Stdout = os.Stdout
 		err = clonecmd.Run()
@@ -62,43 +67,82 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		var retLog string
 		switch framework {
 		case "dfx":
-			// ret, err := startLocalNetworkWithDfx(targetpath)
-			// if err != nil {
-			// 	retbyte, err := buildOutLogs(string(ret))
-			// 	if err != nil {
-			// 		return
-			// 	}
+			http.HandleFunc("/public/log", func(rw http.ResponseWriter, r *http.Request) {
+				var upgrader = websocket.Upgrader{}
 
-			// 	c.String(http.StatusAccepted, string(retbyte))
-			// 	return
-			// }
-
-			ret, err := deployWithDfx(targetpath)
-			if err != nil {
-				retbyte, err := buildOutLogs(string(ret))
+				c, err := upgrader.Upgrade(rw, r, nil)
 				if err != nil {
 					return
 				}
 
-				c.String(http.StatusAccepted, string(retbyte))
-				return
-			}
-			retLog = string(ret)
+				defer c.Close()
+
+				// 4. if using default dfx to create a canister
+				deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
+				deploycmd.Dir = targetpath
+
+				stderr, err := deploycmd.StderrPipe()
+				if err != nil {
+					return
+				}
+
+				stdout, err := deploycmd.StdoutPipe()
+				if err != nil {
+					return
+				}
+
+				deploycmd.Start()
+
+				errReader := bufio.NewReader(stderr)
+				outReader := bufio.NewReader(stdout)
+
+				for {
+					line, err := errReader.ReadBytes('\n')
+					if err == io.EOF {
+						break
+					}
+
+					if err != nil {
+						break
+					}
+
+					err = c.WriteMessage(websocket.TextMessage, line)
+					if err != nil {
+						log.Println("write stderr:", err)
+						break
+					}
+				}
+
+				for {
+					line, err := outReader.ReadBytes('\n')
+					if err == io.EOF {
+						break
+					}
+
+					if err != nil {
+						break
+					}
+
+					err = c.WriteMessage(websocket.TextMessage, line)
+					if err != nil {
+						log.Println("write stdout:", err)
+						break
+					}
+				}
+
+				deploycmd.Wait()
+			})
+
+			http.ListenAndServe(addr, nil)
 		default:
 		}
 
-		// Infof("retLog: %d", len(strings.Split(retLog, "\n")))
-
-		retbyte, err := buildOutLogs(string(retLog))
-		if err != nil {
-			return
-		}
+		fmt.Printf("reach here")
 
 		// n. recall
-		c.String(http.StatusOK, string(retbyte))
+		c.String(http.StatusOK, fmt.Sprintf("tigger build ok at: %s", addr))
 	})
 }
 
@@ -118,23 +162,8 @@ func startLocalNetworkWithDfx(path string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func deployWithDfx(path string) ([]byte, error) {
-	// 4. if using default dfx to create a canister
-	// deploycmd := exec.Command("dfx", "deploy")
-	deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
-	deploycmd.Dir = path
-
-	var b bytes.Buffer
-	deploycmd.Stdout = &b
-	deploycmd.Stderr = &b
-	err := deploycmd.Run()
-	if err != nil {
-		fmt.Printf("dfx(%s) err: %s ret: %s\n", path, err.Error(), b.String())
-		return b.Bytes(), err
-	}
-	return b.Bytes(), nil
-}
-
 func deployWithHugo(path string) {
 
 }
+
+///////////////////////////////
