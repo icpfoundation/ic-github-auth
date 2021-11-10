@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -56,6 +55,13 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
+		logpath := path.Join(repo, "repository", reponame, "logs")
+		err = mkDir(logpath)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		// 3. clone target repo and branch source code to target directory
 		clonecmd := exec.Command("git", "clone", "-b", branch, repourl, targetpath)
 		clonecmd.Stderr = os.Stderr
@@ -70,87 +76,68 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 		switch framework {
 		case "dfx":
-			http.HandleFunc(fmt.Sprintf("%s/%d", "/public/log", connectionId), func(rw http.ResponseWriter, r *http.Request) {
-				var upgrader = websocket.Upgrader{}
+			deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
+			deploycmd.Dir = targetpath
 
-				var err error
-				c, err := upgrader.Upgrade(rw, r, nil)
+			stderr, err := deploycmd.StderrPipe()
+			if err != nil {
+				return
+			}
+
+			stdout, err := deploycmd.StdoutPipe()
+			if err != nil {
+				return
+			}
+
+			deploycmd.Start()
+
+			errReader := bufio.NewReader(stderr)
+			outReader := bufio.NewReader(stdout)
+
+			fmt.Printf("conn: %+v", c)
+
+			f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
+			if err != nil {
+				return
+			}
+
+			defer f.Close()
+
+			for {
+				line, err := errReader.ReadString('\n')
+				if err == io.EOF {
+					break
+				}
+
 				if err != nil {
-					return
+					break
 				}
 
-				defer func() {
-					if err != nil {
-						fmt.Printf("end with err: %s", err.Error())
-					}
-
-					fmt.Println("end with no err")
-					c.Close()
-				}()
-
-				// 4. if using default dfx to create a canister
-				deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
-				deploycmd.Dir = targetpath
-
-				stderr, err := deploycmd.StderrPipe()
+				// write local
+				_, err = f.WriteString(line)
 				if err != nil {
-					return
+					break
+				}
+			}
+
+			for {
+				line, err := outReader.ReadString('\n')
+				if err == io.EOF {
+					break
 				}
 
-				stdout, err := deploycmd.StdoutPipe()
 				if err != nil {
-					return
+					break
 				}
 
-				deploycmd.Start()
-
-				errReader := bufio.NewReader(stderr)
-				outReader := bufio.NewReader(stdout)
-
-				fmt.Printf("conn: %+v", c)
-
-				for {
-					line, err := errReader.ReadBytes('\n')
-					if err == io.EOF {
-						break
-					}
-
-					if err != nil {
-						break
-					}
-
-					err = c.WriteMessage(websocket.TextMessage, line)
-					if err != nil {
-						fmt.Printf("write stderr: %s", err)
-						break
-					}
+				// write local
+				_, err = f.WriteString(line)
+				if err != nil {
+					break
 				}
+			}
 
-				for {
-					line, err := outReader.ReadBytes('\n')
-					if err == io.EOF {
-						break
-					}
-
-					if err != nil {
-						break
-					}
-
-					err = c.WriteMessage(websocket.TextMessage, line)
-					if err != nil {
-						fmt.Printf("write stdout: %s", err)
-						break
-					}
-				}
-
-				fmt.Println("before wait")
-
-				deploycmd.Wait()
-
-				fmt.Println("after wait")
-			})
-
-			http.ListenAndServe(addr, nil)
+			deploycmd.Wait()
 		default:
 		}
 
