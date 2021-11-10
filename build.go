@@ -40,7 +40,7 @@ func handleDeployLogAPI(r *gin.Engine) {
 		}
 
 		filepath := path.Join(repo, "repository", reponame, "logs", filename)
-		t, err := tail.TailFile(filepath, tail.Config{Follow: true, MaxLineSize: 1})
+		t, err := tail.TailFile(filepath, tail.Config{Follow: true})
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
