@@ -24,8 +24,8 @@ func handleDeployLogAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
 
-		// startline := c.Query("startline")
-		// endline := c.Query("endline")
+		startline := c.Query("startline")
+		endline := c.Query("endline")
 
 		filename := c.Query("file")
 		if filename == "" {
@@ -42,9 +42,10 @@ func handleDeployLogAPI(r *gin.Engine) {
 		}
 
 		filepath := path.Join(repo, "repository", reponame, "logs", filename)
+		fmt.Printf("filepath: %s", filepath)
 
-		cmd := "sed -n '1,10p;'"
-		tailCmd := exec.Command("/bin/sh", "-c", cmd, filepath)
+		line := fmt.Sprintf("%s,%sp;", startline, endline)
+		tailCmd := exec.Command("sed", "-n", line, filepath)
 		var b bytes.Buffer
 		tailCmd.Stderr = &b
 		tailCmd.Stdout = &b
