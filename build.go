@@ -41,7 +41,7 @@ func handleDeployLogAPI(r *gin.Engine) {
 			return
 		}
 
-		filepath := path.Join(repo, "repository", reponame, "logs", filename)
+		filepath := path.Join(repo, "logs", reponame, filename)
 		fmt.Printf("filepath: %s\n", filepath)
 
 		line := fmt.Sprintf("%s,%sp;", startline, endline)
@@ -99,7 +99,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		logpath := path.Join(repo, "repository", reponame, "logs")
+		logpath := path.Join(repo, "logs", reponame)
 		err = mkDir(logpath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
