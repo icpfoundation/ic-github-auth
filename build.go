@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,12 +23,12 @@ func handleDeployLogAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
 
-		startline := c.Query("startline")
-		endline := c.Query("endline")
+		// startline := c.Query("startline")
+		// endline := c.Query("endline")
 
 		filename := c.Query("file")
 		if filename == "" {
-			c.String(http.StatusInternalServerError, errors.New("filename must provide").Error())
+			c.String(http.StatusInternalServerError, "filename must provide")
 		}
 
 		reponame := c.Query("reponame")
@@ -44,20 +43,26 @@ func handleDeployLogAPI(r *gin.Engine) {
 		filepath := path.Join(repo, "logs", reponame, filename)
 		fmt.Printf("filepath: %s\n", filepath)
 
-		line := fmt.Sprintf("%s,%sp;", startline, endline)
-		tailCmd := exec.Command("sed", "-n", line, filepath)
-
-		var b bytes.Buffer
-		tailCmd.Stderr = &b
-		tailCmd.Stdout = &b
-
-		tailCmd.Run()
+		ret, err := os.ReadFile(filepath)
 		if err != nil {
-			fmt.Printf("tail err: %s", err.Error())
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		c.String(http.StatusOK, b.String())
+		// line := fmt.Sprintf("%s,%sp;", startline, endline)
+		// tailCmd := exec.Command("sed", "-n", line, filepath)
+
+		// var b bytes.Buffer
+		// tailCmd.Stderr = &b
+		// tailCmd.Stdout = &b
+
+		// tailCmd.Run()
+		// if err != nil {
+		// 	fmt.Printf("tail err: %s", err.Error())
+		// 	return
+		// }
+
+		c.String(http.StatusOK, string(ret))
 	})
 }
 
