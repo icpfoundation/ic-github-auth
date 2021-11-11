@@ -25,6 +25,13 @@ ba3ps-giaaa-aaaag-qaafq-cai
 
 ➜  testdeploy git:(master) dfx wallet --network ic balance
 8484064427224 cycles.
+7431211639057
+3431205998929
+13851975955795
+1849963971363
+19353513611413
 
 https://<WALLET-CANISTER-ID>.raw.ic0.app
 https://ba3ps-giaaa-aaaag-qaafq-cai.raw.ic0.app
+
+dfx ledger --network ic top-up ba3ps-giaaa-aaaag-qaafq-cai --amount 0.3

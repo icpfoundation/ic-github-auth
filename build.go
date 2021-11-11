@@ -92,7 +92,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
-		targetpath := path.Join(repo, "repository", reponame, fmt.Sprintf("%d", timing))
+		targetpath := path.Join(repo, "repository", reponame)
 		err = mkDir(targetpath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -112,14 +112,26 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		// 3. clone target repo and branch source code to target directory
-		clonecmd := exec.Command("git", "clone", "-b", branch, repourl, targetpath)
-		clonecmd.Stderr = os.Stderr
-		clonecmd.Stdout = os.Stdout
-		err = clonecmd.Run()
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
+		if Exists(targetpath) {
+			pullcmd := exec.Command("git", "pull")
+			pullcmd.Dir = targetpath
+			pullcmd.Stderr = os.Stderr
+			pullcmd.Stdout = os.Stdout
+			err = pullcmd.Run()
+			if err != nil {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
+		} else {
+			// 3. clone target repo and branch source code to target directory
+			clonecmd := exec.Command("git", "clone", "-b", branch, repourl, targetpath)
+			clonecmd.Stderr = os.Stderr
+			clonecmd.Stdout = os.Stdout
+			err = clonecmd.Run()
+			if err != nil {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
 		}
 
 		switch framework {
