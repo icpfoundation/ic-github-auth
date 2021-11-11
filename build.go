@@ -120,6 +120,13 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		case "dfx":
 
 			go func() {
+				f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
+				if err != nil {
+					return
+				}
+
+				defer f.Close()
+
 				deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
 				deploycmd.Dir = targetpath
 
@@ -137,13 +144,6 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 				errReader := bufio.NewReader(stderr)
 				outReader := bufio.NewReader(stdout)
-
-				f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
-				if err != nil {
-					return
-				}
-
-				defer f.Close()
 
 				// defer func() {
 				// 	err := cleanCacheCmd(targetpath)
