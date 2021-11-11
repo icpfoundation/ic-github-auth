@@ -112,7 +112,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		if Exists(targetpath) {
+		if Exists(path.Join(targetpath, ".git")) {
 			pullcmd := exec.Command("git", "pull")
 			pullcmd.Dir = targetpath
 			pullcmd.Stderr = os.Stderr
