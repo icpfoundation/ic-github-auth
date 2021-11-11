@@ -106,6 +106,12 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
+		f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		// 3. clone target repo and branch source code to target directory
 		clonecmd := exec.Command("git", "clone", "-b", branch, repourl, targetpath)
 		clonecmd.Stderr = os.Stderr
@@ -120,10 +126,6 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		case "dfx":
 
 			go func() {
-				f, err := os.Create(path.Join(logpath, fmt.Sprintf("%d", timing)))
-				if err != nil {
-					return
-				}
 
 				defer f.Close()
 
