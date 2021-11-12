@@ -123,6 +123,10 @@ func ReadInstallCode(ctx context.Context, state string) ([]byte, error) {
 }
 
 func SaveCanisterInfo(ctx context.Context, canisterInfo CanisterInfo) error {
+	if canisterInfo.CanisterID == "" {
+		return xerrors.New("canister id is nil")
+	}
+
 	key := datastore.NewKey(canisterInfo.CanisterID)
 
 	info, err := json.Marshal(canisterInfo)
@@ -194,6 +198,10 @@ func readCanisterList(ctx context.Context) ([]string, error) {
 		err := json.Unmarshal(res.Value, cinfo)
 		if err != nil {
 			errs = multierr.Append(errs, xerrors.Errorf("decoding state for key '%s': %w", res.Key, err))
+			continue
+		}
+
+		if cinfo.CanisterID == "" {
 			continue
 		}
 
