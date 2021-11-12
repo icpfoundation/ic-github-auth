@@ -13,10 +13,16 @@ import (
 	"strings"
 )
 
-func getController(targetpath string) (string, error) {
+func getController(targetpath string, islocal bool) (string, error) {
 	// dfx wallet --network ic addresses
 
-	idcmd := exec.Command("dfx", "wallet", "--network", "ic", "address")
+	var idcmd *exec.Cmd
+	if islocal {
+		idcmd = exec.Command("dfx", "wallet", "address")
+	} else {
+		idcmd = exec.Command("dfx", "wallet", "--network", "ic", "address")
+	}
+
 	idcmd.Dir = targetpath
 
 	var b bytes.Buffer
@@ -95,7 +101,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		ID string `json:"id"`
 	}
 
-	controller, err := getController(targetpath)
+	controller, err := getController(targetpath, islocal)
 	if err != nil {
 		fmt.Printf("get controller: %s\n", err.Error())
 		return err
