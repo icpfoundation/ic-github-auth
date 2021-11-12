@@ -91,8 +91,6 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		}
 	}
 
-	deploycmd.Wait()
-
 	type CanisterID struct {
 		ID string `json:"id"`
 	}
@@ -147,6 +145,8 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			}
 		}
 	}
+
+	deploycmd.Wait()
 
 	return nil
 }
