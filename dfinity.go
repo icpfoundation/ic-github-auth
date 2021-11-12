@@ -97,11 +97,14 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 	controller, err := getController(targetpath)
 	if err != nil {
+		fmt.Printf("get controller: %s\n", err.Error())
 		return err
 	}
 
 	//read canister id
 	cinfofile := filepath.Join(targetpath, "canister_ids.json")
+
+	fmt.Printf("canister ids file path: %s\n", cinfofile)
 
 	if Exists(cinfofile) {
 		ret, err := os.ReadFile(cinfofile)
@@ -123,7 +126,6 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		}
 
 		for k, v := range infos {
-
 			var ctype = "asssets"
 			if framework == "dfx" && !strings.Contains(k, "assets") {
 				ctype = "other"
@@ -138,6 +140,8 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 				Framework:    framework,
 				Network:      network,
 			}
+
+			fmt.Printf("cinfo: %+v", cinfo)
 
 			err = SaveCanisterInfo(context.TODO(), cinfo)
 			if err != nil {
