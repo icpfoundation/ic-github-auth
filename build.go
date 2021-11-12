@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -23,17 +20,12 @@ func handleDeployLogAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
 
-		// startline := c.Query("startline")
-		// endline := c.Query("endline")
-
 		filename := c.Query("file")
 		if filename == "" {
 			c.String(http.StatusInternalServerError, "filename must provide")
 		}
-
 		reponame := c.Query("reponame")
 
-		///
 		repo, err := homedir.Expand(repoPath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -41,26 +33,12 @@ func handleDeployLogAPI(r *gin.Engine) {
 		}
 
 		filepath := path.Join(repo, "logs", reponame, filename)
-		fmt.Printf("filepath: %s\n", filepath)
 
 		ret, err := os.ReadFile(filepath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
-
-		// line := fmt.Sprintf("%s,%sp;", startline, endline)
-		// tailCmd := exec.Command("sed", "-n", line, filepath)
-
-		// var b bytes.Buffer
-		// tailCmd.Stderr = &b
-		// tailCmd.Stdout = &b
-
-		// tailCmd.Run()
-		// if err != nil {
-		// 	fmt.Printf("tail err: %s", err.Error())
-		// 	return
-		// }
 
 		c.String(http.StatusOK, string(ret))
 	})
@@ -141,73 +119,46 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 		switch framework {
 		case "dfx":
-
-			go func() {
+			go func() error {
 
 				defer f.Close()
 
-				deploycmd := exec.Command("dfx", "deploy", "--network", "ic")
-				deploycmd.Dir = targetpath
-
-				stderr, err := deploycmd.StderrPipe()
+				err := npmInstall(targetpath, f)
 				if err != nil {
-					return
+					return err
 				}
 
-				stdout, err := deploycmd.StdoutPipe()
+				err = deployWithDfx(targetpath, f)
 				if err != nil {
-					return
+					return err
 				}
 
-				deploycmd.Start()
+				defer fmt.Errorf("deploy with dfx: %s", err.Error())
 
-				errReader := bufio.NewReader(stderr)
-				outReader := bufio.NewReader(stdout)
+				return nil
+			}()
 
-				// defer func() {
-				// 	err := cleanCacheCmd(targetpath)
-				// 	if err != nil {
-				// 		return
-				// 	}
+		case "reactjs":
+			canistername := c.Query("canistername")
+			resource := c.Query("resourcepath")
 
-				// 	fmt.Printf("clean cache at: %s ok", targetpath)
-				// }()
+			if canistername == "" || resource == "" {
+				c.String(http.StatusBadRequest, "canister name and resource path must provide")
+				return
+			}
 
-				for {
-					line, err := errReader.ReadString('\n')
-					if err == io.EOF {
-						break
-					}
+			go func() error {
+				defer f.Close()
 
-					if err != nil {
-						break
-					}
-
-					// write local
-					_, err = f.WriteString(fmt.Sprintf("[%s]	%s", time.Now().Format("2006-01-02 15:04:05.999"), line))
-					if err != nil {
-						break
-					}
+				//npm install and npm run build
+				err := deployWithReactjs(targetpath, f, canistername, resource)
+				if err != nil {
+					return err
 				}
 
-				for {
-					line, err := outReader.ReadString('\n')
-					if err == io.EOF {
-						break
-					}
+				defer fmt.Errorf("deploy with reactjs: %s", err.Error())
 
-					if err != nil {
-						break
-					}
-
-					// write local
-					_, err = f.WriteString(fmt.Sprintf("[%s]	%s", time.Now().Format("2006-01-02 15:04:05.999"), line))
-					if err != nil {
-						break
-					}
-				}
-
-				deploycmd.Wait()
+				return nil
 			}()
 		default:
 		}
@@ -219,39 +170,3 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		})
 	})
 }
-
-func cleanCacheCmd(path string) error {
-	cleanCmd := exec.Command("dfx", "cache", "delete")
-	cleanCmd.Dir = path
-
-	cleanCmd.Stderr = os.Stderr
-	cleanCmd.Stdout = os.Stdout
-	err := cleanCmd.Run()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func startLocalNetworkWithDfx(path string) ([]byte, error) {
-	// 3. start local network
-	startcmd := exec.Command("dfx", "start", "--background")
-	startcmd.Dir = path
-
-	var b bytes.Buffer
-	startcmd.Stdout = &b
-	startcmd.Stderr = &b
-	err := startcmd.Run()
-	if err != nil {
-		fmt.Printf("dfx(%s) err: %s ret: %s\n", path, err.Error(), b.String())
-		return b.Bytes(), err
-	}
-	return b.Bytes(), nil
-}
-
-func deployWithHugo(path string) {
-
-}
-
-///////////////////////////////
