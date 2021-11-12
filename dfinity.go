@@ -18,9 +18,9 @@ func getController(targetpath string, islocal bool) (string, error) {
 
 	var idcmd *exec.Cmd
 	if islocal {
-		idcmd = exec.Command("dfx", "wallet", "address")
+		idcmd = exec.Command("dfx", "wallet", "addresses")
 	} else {
-		idcmd = exec.Command("dfx", "wallet", "--network", "ic", "address")
+		idcmd = exec.Command("dfx", "wallet", "--network", "ic", "addresses")
 	}
 
 	idcmd.Dir = targetpath
