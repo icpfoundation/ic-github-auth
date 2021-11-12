@@ -65,8 +65,14 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 		reponame := c.Query("reponame")
 		repourl := c.Query("repourl")
 		branch := c.Query("branch")
+		location := c.Query("location")
 
-		Infof("Tigger build from client for %s %s %s %s", repourl, branch, reponame, framework)
+		var islocal bool = false
+		if location == "local" {
+			islocal = true
+		}
+
+		Infof("Tigger build from client for %s %s %s %s %s", repourl, branch, reponame, framework, location)
 
 		// 2. mkdir
 		timing := time.Now().Unix()
@@ -128,7 +134,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 					return err
 				}
 
-				err = deployWithDfx(targetpath, f)
+				err = deployWithDfx(targetpath, f, reponame, islocal, framework)
 				if err != nil {
 					return err
 				}
@@ -151,7 +157,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 				defer f.Close()
 
 				//npm install and npm run build
-				err := deployWithReactjs(targetpath, f, canistername, resource)
+				err := deployWithReactjs(targetpath, f, canistername, resource, reponame, islocal, framework)
 				if err != nil {
 					return err
 				}

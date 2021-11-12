@@ -2,7 +2,7 @@ package main
 
 import "os"
 
-func deployWithReactjs(path string, f *os.File, canister string, resource string) error {
+func deployWithReactjs(path string, f *os.File, canister string, resource string, repo string, islocal bool, framework string) error {
 	err := npmInstall(path, f)
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func deployWithReactjs(path string, f *os.File, canister string, resource string
 		return err
 	}
 
-	err = deployWithDfx(path, f)
+	err = deployWithDfx(path, f, repo, islocal, framework)
 	if err != nil {
 		return err
 	}

@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
 
 	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-datastore/query"
 	levelds "github.com/ipfs/go-ds-leveldb"
 	"github.com/mitchellh/go-homedir"
 	ldbopts "github.com/syndtr/goleveldb/leveldb/opt"
+	"go.uber.org/multierr"
+	"golang.org/x/xerrors"
 )
 
 var InfoDB datastore.Batching
@@ -116,4 +120,86 @@ func ReadInstallCode(ctx context.Context, state string) ([]byte, error) {
 	}
 
 	return nil, nil
+}
+
+func SaveCanisterInfo(ctx context.Context, canisterInfo CanisterInfo) error {
+	key := datastore.NewKey(canisterInfo.CanisterID)
+
+	info, err := json.Marshal(canisterInfo)
+	if err != nil {
+		return err
+	}
+
+	err = InfoDB.Put(ctx, key, info)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("save cinfo ok: %s", canisterInfo.CanisterID)
+
+	return nil
+}
+
+func ReadCanisterInfo(ctx context.Context, id string) ([]byte, error) {
+	///
+	key := datastore.NewKey(id)
+
+	ishas, err := InfoDB.Has(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	if ishas {
+		ret, err := InfoDB.Get(ctx, key)
+		if err != nil {
+			return nil, err
+		}
+
+		// info := &CanisterInfo{}
+		// err = json.Unmarshal(ret, info)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		fmt.Printf("read cinfo ok: %s", id)
+
+		return ret, nil
+	}
+
+	return nil, nil
+}
+
+func readCanisterList(ctx context.Context) ([]string, error) {
+	res, err := InfoDB.Query(ctx, query.Query{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Close()
+
+	canisterids := []string{}
+
+	var errs error
+	for {
+		res, ok := res.NextSync()
+		if !ok {
+			break
+		}
+
+		if res.Error != nil {
+			return nil, res.Error
+		}
+
+		cinfo := &CanisterInfo{}
+		err := json.Unmarshal(res.Value, cinfo)
+		if err != nil {
+			errs = multierr.Append(errs, xerrors.Errorf("decoding state for key '%s': %w", res.Key, err))
+			continue
+		}
+
+		canisterids = append(canisterids, cinfo.CanisterID)
+	}
+
+	fmt.Printf("read canister infos ok, len %d\n", len(canisterids))
+	return canisterids, nil
 }
