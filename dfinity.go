@@ -98,7 +98,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 	}
 
 	type CanisterID struct {
-		ID string `json:"id"`
+		IC string `json:"ic"`
 	}
 
 	controller, err := getController(targetpath, islocal)
@@ -141,7 +141,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 				Repository:   repo,
 				Controller:   controller,
 				CanisterName: k,
-				CanisterID:   v.ID,
+				CanisterID:   v.IC,
 				CanisterType: ctype,
 				Framework:    framework,
 				Network:      network,
