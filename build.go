@@ -139,8 +139,6 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 					return err
 				}
 
-				defer fmt.Errorf("deploy with dfx: %s", err.Error())
-
 				return nil
 			}()
 
@@ -161,8 +159,6 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 				if err != nil {
 					return err
 				}
-
-				defer fmt.Errorf("deploy with reactjs: %s", err.Error())
 
 				return nil
 			}()
