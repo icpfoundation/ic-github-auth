@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/lyswifter/ic-auth/types"
 )
 
 // infof infof
@@ -39,7 +41,7 @@ func buildOutLogs(input string) ([]byte, error) {
 		logs = append(logs, fat)
 	}
 
-	var out = CmdOutput{
+	var out = types.CmdOutput{
 		TaskID: "xxx",
 		Logs:   logs,
 	}

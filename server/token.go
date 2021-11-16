@@ -1,14 +1,16 @@
-package main
+package server
 
 import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lyswifter/ic-auth/db"
+	"github.com/lyswifter/ic-auth/util"
 )
 
-func handleAccessTokenRedirectAPI(r *gin.Engine) {
+func HandleAccessTokenRedirectAPI(r *gin.Engine) {
 	r.GET("/public/token", func(c *gin.Context) {
-		Infof("get access token url: %s", c.Request.URL.String())
+		util.Infof("get access token url: %s", c.Request.URL.String())
 		state := c.Query("state")
 
 		c.Header("Access-Control-Allow-Origin", "*")
@@ -25,7 +27,7 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
-		code, err := ReadInstallCode(context.TODO(), state)
+		code, err := db.ReadInstallCode(context.TODO(), state)
 		if err != nil {
 			c.JSON(502, gin.H{
 				"status":  "Err",
@@ -34,7 +36,7 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
-		ret, err := ReadAccessToken(context.TODO(), state)
+		ret, err := db.ReadAccessToken(context.TODO(), state)
 		if err != nil {
 			c.JSON(502, gin.H{
 				"status":  "Err",
@@ -51,7 +53,7 @@ func handleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
-		Infof("read installation code: %s token: %s", string(code), string(ret))
+		util.Infof("read installation code: %s token: %s", string(code), string(ret))
 
 		c.JSON(200, gin.H{
 			"statue":  "Ok",

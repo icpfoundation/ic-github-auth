@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 // Directory and File
 
-func mkDir(path string) error {
+func MkDir(path string) error {
 	if _, err := os.ReadDir(path); err != nil {
 		if os.IsNotExist(err) {
 			err = os.MkdirAll(path, 0777)

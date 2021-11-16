@@ -1,4 +1,4 @@
-package main
+package deploy
 
 import (
 	"bufio"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"text/template"
+
+	"github.com/lyswifter/ic-auth/util"
 )
 
 type Dfxjson struct {
@@ -24,7 +26,7 @@ const templateText = `{
 	}
   }`
 
-func newDfxjson(targetpath string, source string, canistername string) error {
+func NewDfxjson(targetpath string, source string, canistername string) error {
 	//generate dfxjson
 	dfxjson := Dfxjson{
 		CanisterName: canistername,
@@ -51,7 +53,7 @@ func newDfxjson(targetpath string, source string, canistername string) error {
 	return nil
 }
 
-func npmInstall(targetpath string, f *os.File) error {
+func NpmInstall(targetpath string, f *os.File) error {
 	//npm install
 	installCmd := exec.Command("npm", "install")
 	installCmd.Dir = targetpath
@@ -82,7 +84,7 @@ func npmInstall(targetpath string, f *os.File) error {
 		}
 
 		// write local
-		_, err = f.WriteString(Format(line))
+		_, err = f.WriteString(util.Format(line))
 		if err != nil {
 			break
 		}
@@ -99,7 +101,7 @@ func npmInstall(targetpath string, f *os.File) error {
 		}
 
 		// write local
-		_, err = f.WriteString(Format(line))
+		_, err = f.WriteString(util.Format(line))
 		if err != nil {
 			break
 		}
@@ -110,7 +112,7 @@ func npmInstall(targetpath string, f *os.File) error {
 	return nil
 }
 
-func npmRunBuild(targetpath string, f *os.File) error {
+func NpmRunBuild(targetpath string, f *os.File) error {
 	//npm install
 	npmBuildCmd := exec.Command("npm", "run", "build")
 	npmBuildCmd.Dir = targetpath
@@ -141,7 +143,7 @@ func npmRunBuild(targetpath string, f *os.File) error {
 		}
 
 		// write local
-		_, err = f.WriteString(Format(line))
+		_, err = f.WriteString(util.Format(line))
 		if err != nil {
 			break
 		}
@@ -158,7 +160,7 @@ func npmRunBuild(targetpath string, f *os.File) error {
 		}
 
 		// write local
-		_, err = f.WriteString(Format(line))
+		_, err = f.WriteString(util.Format(line))
 		if err != nil {
 			break
 		}

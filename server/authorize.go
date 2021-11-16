@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -7,15 +7,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lyswifter/ic-auth/db"
+	"github.com/lyswifter/ic-auth/params"
+	"github.com/lyswifter/ic-auth/util"
 )
 
-func handleGithubAuthorizeAPI(r *gin.Engine) {
+func HandleGithubAuthorizeAPI(r *gin.Engine) {
 	r.GET("/public/auth", func(c *gin.Context) {
 		code := c.Query("code")
 		state := c.Query("state")
 		installationId := c.Query("installation_id")
 
-		Infof("get authorize redirect(%s): %s", c.Request.URL.String(), code)
+		util.Infof("get authorize redirect(%s): %s", c.Request.URL.String(), code)
 
 		if code == "" {
 			c.JSON(500, gin.H{
@@ -25,14 +28,14 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 			return
 		}
 
-		err := SaveInstallCode(context.TODO(), state, installationId)
+		err := db.SaveInstallCode(context.TODO(), state, installationId)
 		if err != nil {
 			return
 		}
 
-		err = getAccessToken(code, redirect_uri, state)
+		err = getAccessToken(code, params.Redirect_uri, state)
 		if err != nil {
-			Errorf("get access token: %s", err.Error())
+			util.Errorf("get access token: %s", err.Error())
 			return
 		}
 
@@ -73,29 +76,29 @@ func handleGithubAuthorizeAPI(r *gin.Engine) {
 }
 
 func getAccessToken(code string, redirect_uri string, state string) error {
-	url := fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&redirect_uri=%s&state=%s", accessTokenUrl, client_id, client_secret, code, redirect_uri, state)
+	url := fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&redirect_uri=%s&state=%s", params.AccessTokenUrl, params.Client_id, params.Client_secret, code, redirect_uri, state)
 	method := "POST"
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		Errorf("new request err: %s", err.Error())
+		util.Errorf("new request err: %s", err.Error())
 		return err
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		Errorf("do request err: %s", err.Error())
+		util.Errorf("do request err: %s", err.Error())
 		return err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		Errorf("read response err: %s", err.Error())
+		util.Errorf("read response err: %s", err.Error())
 		return err
 	}
-	Infof("request access token response: %s", string(body))
+	util.Infof("request access token response: %s", string(body))
 
 	//access_token=ghu_xaM3AEToCoATeS4S0lT3hyxZfXu9Jg4Wwomz&expires_in=28800&
 	//refresh_token=ghr_MYVUlf0gKOpucwkPUWoxYpjSzRu2Rpn5Gy9pzIPD0DA8LgJNYYkGLNG6OusAGzrsa5GNaT0k8Z9d&refresh_token_expires_in=15724800&scope=&token_type=bearer
@@ -104,9 +107,9 @@ func getAccessToken(code string, redirect_uri string, state string) error {
 		state = "xxxxxxx"
 	}
 
-	err = SaveAccessToken(context.TODO(), state, body)
+	err = db.SaveAccessToken(context.TODO(), state, body)
 	if err != nil {
-		Errorf("save access token err %s", err.Error())
+		util.Errorf("save access token err %s", err.Error())
 		return err
 	}
 

@@ -1,4 +1,4 @@
-package main
+package types
 
 type AuthResponse struct {
 	AccessToken          string `json:"access_token"`
@@ -12,4 +12,14 @@ type AuthResponse struct {
 type CmdOutput struct {
 	TaskID string
 	Logs   []string
+}
+
+type CanisterInfo struct {
+	Repo         string `json"repo"`
+	Controller   string `json:"controller"`
+	CanisterName string `json:"name"`
+	CanisterID   string `json:"id"`
+	CanisterType string `json:"type"`
+	Framework    string `json:"framework"`
+	Network      string `json:"network"`
 }

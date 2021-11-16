@@ -5,22 +5,17 @@ import (
 	"path"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lyswifter/ic-auth/db"
+	"github.com/lyswifter/ic-auth/server"
+	"github.com/lyswifter/ic-auth/util"
 	"github.com/mitchellh/go-homedir"
 	"github.com/unrolled/secure"
 )
 
-const repoPath = "~/.icauth"
-
-const client_id = "Iv1.018aba55453994ac"
-const client_secret = "e6a5b65152a4dca9754fa2e13df80f3c087019e7"
-
-var accessTokenUrl = "https://github.com/login/oauth/access_token"
-var redirect_uri = "https://chaincloud.skyipfs.com:9091/public/auth/"
-
 func main() {
-	Infof("This is the internet computer github app authorization server")
+	util.Infof("This is the internet computer github app authorization server")
 
-	DataStores()
+	db.DataStores()
 
 	setupAuthServer()
 }
@@ -67,12 +62,12 @@ func setupAuthServer() {
 	r := gin.Default()
 	r.Use(secureFunc)
 
-	handleAccessTokenRedirectAPI(r)
-	handleGithubAuthorizeAPI(r)
-	handleTiggerBuildAPI(r)
-	handleDeployLogAPI(r)
-	handleCanisterListAPI(r)
-	handleCanisterInfoAPI(r)
+	server.HandleAccessTokenRedirectAPI(r)
+	server.HandleGithubAuthorizeAPI(r)
+	server.HandleTiggerBuildAPI(r)
+	server.HandleDeployLogAPI(r)
+	server.HandleCanisterListAPI(r)
+	server.HandleCanisterInfoAPI(r)
 
 	// r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 

@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -10,6 +10,9 @@ import (
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
 	levelds "github.com/ipfs/go-ds-leveldb"
+	"github.com/lyswifter/ic-auth/params"
+	"github.com/lyswifter/ic-auth/types"
+	"github.com/lyswifter/ic-auth/util"
 	"github.com/mitchellh/go-homedir"
 	ldbopts "github.com/syndtr/goleveldb/leveldb/opt"
 	"go.uber.org/multierr"
@@ -36,33 +39,33 @@ func setupLevelDs(path string, readonly bool) (datastore.Batching, error) {
 		ReadOnly:    readonly,
 	})
 	if err != nil {
-		Errorf("NewDatastore: %s", err)
+		util.Errorf("NewDatastore: %s", err)
 		return nil, err
 	}
 	return db, err
 }
 
 func DataStores() {
-	repodir, err := homedir.Expand(repoPath)
+	repodir, err := homedir.Expand(params.RepoPath)
 	if err != nil {
 		return
 	}
 
 	ldb, err := setupLevelDs(repodir, false)
 	if err != nil {
-		Errorf("setup beacondb: err %s", err)
+		util.Errorf("setup beacondb: err %s", err)
 		return
 	}
 	InfoDB = ldb
-	Infof("InfoDB: %+v", InfoDB)
+	util.Infof("InfoDB: %+v", InfoDB)
 
 	idb, err := setupLevelDs(path.Join(repodir, "uinfo"), false)
 	if err != nil {
-		Errorf("setup infodb: err %s", err)
+		util.Errorf("setup infodb: err %s", err)
 		return
 	}
 	UserInfoDB = idb
-	Infof("UserInfoDB: %+v", UserInfoDB)
+	util.Infof("UserInfoDB: %+v", UserInfoDB)
 }
 
 func SaveAccessToken(ctx context.Context, state string, authResponse []byte) error {
@@ -72,7 +75,7 @@ func SaveAccessToken(ctx context.Context, state string, authResponse []byte) err
 		return err
 	}
 
-	Infof("write user authorization info for state: %s", key.String())
+	util.Infof("write user authorization info for state: %s", key.String())
 	return nil
 }
 
@@ -100,7 +103,7 @@ func SaveInstallCode(ctx context.Context, state string, code string) error {
 	if err != nil {
 		return err
 	}
-	Infof("write installation code for state: %s", key.String())
+	util.Infof("write installation code for state: %s", key.String())
 	return nil
 }
 
@@ -122,7 +125,7 @@ func ReadInstallCode(ctx context.Context, state string) ([]byte, error) {
 	return nil, nil
 }
 
-func SaveCanisterInfo(ctx context.Context, canisterInfo CanisterInfo) error {
+func SaveCanisterInfo(ctx context.Context, canisterInfo types.CanisterInfo) error {
 	if canisterInfo.CanisterID == "" {
 		return xerrors.New("canister id is nil")
 	}
@@ -159,21 +162,14 @@ func ReadCanisterInfo(ctx context.Context, id string) ([]byte, error) {
 			return nil, err
 		}
 
-		// info := &CanisterInfo{}
-		// err = json.Unmarshal(ret, info)
-		// if err != nil {
-		// 	return nil, err
-		// }
-
 		fmt.Printf("read cinfo ok: %s", id)
-
 		return ret, nil
 	}
 
 	return nil, nil
 }
 
-func readCanisterList(ctx context.Context) ([]string, error) {
+func ReadCanisterList(ctx context.Context) ([]string, error) {
 	res, err := InfoDB.Query(ctx, query.Query{})
 	if err != nil {
 		return nil, err
@@ -194,7 +190,7 @@ func readCanisterList(ctx context.Context) ([]string, error) {
 			return nil, res.Error
 		}
 
-		cinfo := &CanisterInfo{}
+		cinfo := &types.CanisterInfo{}
 		err := json.Unmarshal(res.Value, cinfo)
 		if err != nil {
 			errs = multierr.Append(errs, xerrors.Errorf("decoding state for key '%s': %w", res.Key, err))

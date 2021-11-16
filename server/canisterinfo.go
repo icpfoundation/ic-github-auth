@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -6,19 +6,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lyswifter/ic-auth/db"
 )
 
-type CanisterInfo struct {
-	Repository   string `json"repo"`
-	Controller   string `json:"controller"`
-	CanisterName string `json:"name"`
-	CanisterID   string `json:"id"`
-	CanisterType string `json:"type"`
-	Framework    string `json:"framework"`
-	Network      string `json:"network"`
-}
-
-func handleCanisterListAPI(r *gin.Engine) {
+func HandleCanisterListAPI(r *gin.Engine) {
 	r.GET("public/canisterlist", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Credentials", "true")
@@ -26,7 +17,7 @@ func handleCanisterListAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
 
-		ret, err := readCanisterList(context.TODO())
+		ret, err := db.ReadCanisterList(context.TODO())
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -46,7 +37,7 @@ func handleCanisterListAPI(r *gin.Engine) {
 	})
 }
 
-func handleCanisterInfoAPI(r *gin.Engine) {
+func HandleCanisterInfoAPI(r *gin.Engine) {
 	r.GET("public/canisterinfo", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Credentials", "true")
@@ -60,7 +51,7 @@ func handleCanisterInfoAPI(r *gin.Engine) {
 			return
 		}
 
-		info, err := ReadCanisterInfo(context.TODO(), canisterid)
+		info, err := db.ReadCanisterInfo(context.TODO(), canisterid)
 		if err != nil {
 			c.String(http.StatusBadRequest, "read canister info err: %s", err.Error())
 			return

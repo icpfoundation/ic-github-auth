@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -9,10 +9,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lyswifter/ic-auth/deploy"
+	"github.com/lyswifter/ic-auth/params"
+	"github.com/lyswifter/ic-auth/util"
 	"github.com/mitchellh/go-homedir"
 )
 
-func handleDeployLogAPI(r *gin.Engine) {
+func HandleDeployLogAPI(r *gin.Engine) {
 	r.GET("public/logs", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Credentials", "true")
@@ -26,7 +29,7 @@ func handleDeployLogAPI(r *gin.Engine) {
 		}
 		reponame := c.Query("reponame")
 
-		repo, err := homedir.Expand(repoPath)
+		repo, err := homedir.Expand(params.RepoPath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -44,7 +47,7 @@ func handleDeployLogAPI(r *gin.Engine) {
 	})
 }
 
-func handleTiggerBuildAPI(r *gin.Engine) {
+func HandleTiggerBuildAPI(r *gin.Engine) {
 	r.GET("public/build", func(c *gin.Context) {
 		// 1. get target repo url and branch
 		// 2. clone source code to specify directory
@@ -72,24 +75,24 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			islocal = true
 		}
 
-		Infof("Tigger build from client for %s %s %s %s %s", repourl, branch, reponame, framework, location)
+		util.Infof("Tigger build from client for %s %s %s %s %s", repourl, branch, reponame, framework, location)
 
 		// 2. mkdir
 		timing := time.Now().Unix()
-		repo, err := homedir.Expand(repoPath)
+		repo, err := homedir.Expand(params.RepoPath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 		targetpath := path.Join(repo, "repository", reponame)
-		err = mkDir(targetpath)
+		err = util.MkDir(targetpath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		logpath := path.Join(repo, "logs", reponame)
-		err = mkDir(logpath)
+		err = util.MkDir(logpath)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -101,7 +104,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		if Exists(path.Join(targetpath, ".git")) {
+		if util.Exists(path.Join(targetpath, ".git")) {
 			pullcmd := exec.Command("git", "pull")
 			pullcmd.Dir = targetpath
 			pullcmd.Stderr = os.Stderr
@@ -129,12 +132,12 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 
 				defer f.Close()
 
-				err := npmInstall(targetpath, f)
+				err := deploy.NpmInstall(targetpath, f)
 				if err != nil {
 					return err
 				}
 
-				err = deployWithDfx(targetpath, f, reponame, islocal, framework)
+				err = deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework)
 				if err != nil {
 					return err
 				}
@@ -155,7 +158,7 @@ func handleTiggerBuildAPI(r *gin.Engine) {
 				defer f.Close()
 
 				//npm install and npm run build
-				err := deployWithReactjs(targetpath, f, canistername, resource, reponame, islocal, framework)
+				err := deploy.DeployWithReactjs(targetpath, f, canistername, resource, reponame, islocal, framework)
 				if err != nil {
 					return err
 				}

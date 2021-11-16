@@ -1,4 +1,4 @@
-package main
+package deploy
 
 import (
 	"bufio"
@@ -11,6 +11,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/lyswifter/ic-auth/db"
+	"github.com/lyswifter/ic-auth/types"
+	"github.com/lyswifter/ic-auth/util"
 )
 
 func getController(targetpath string, islocal bool) (string, error) {
@@ -37,7 +41,7 @@ func getController(targetpath string, islocal bool) (string, error) {
 	return b.String(), nil
 }
 
-func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string) error {
+func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string) error {
 
 	var deploycmd *exec.Cmd
 	if islocal {
@@ -74,7 +78,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		}
 
 		// write local
-		_, err = f.WriteString(Format(line))
+		_, err = f.WriteString(util.Format(line))
 		if err != nil {
 			break
 		}
@@ -91,7 +95,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		}
 
 		// write local
-		_, err = f.WriteString(Format(line))
+		_, err = f.WriteString(util.Format(line))
 		if err != nil {
 			break
 		}
@@ -112,7 +116,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 	fmt.Printf("canister ids file path: %s\n", cinfofile)
 
-	if Exists(cinfofile) {
+	if util.Exists(cinfofile) {
 		ret, err := os.ReadFile(cinfofile)
 		if err != nil {
 			return err
@@ -137,8 +141,8 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 				ctype = "other"
 			}
 
-			cinfo := CanisterInfo{
-				Repository:   repo,
+			cinfo := types.CanisterInfo{
+				Repo:         repo,
 				Controller:   controller,
 				CanisterName: k,
 				CanisterID:   v.IC,
@@ -149,7 +153,7 @@ func deployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 			fmt.Printf("cinfo: %+v", cinfo)
 
-			err = SaveCanisterInfo(context.TODO(), cinfo)
+			err = db.SaveCanisterInfo(context.TODO(), cinfo)
 			if err != nil {
 				return err
 			}
