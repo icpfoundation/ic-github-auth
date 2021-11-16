@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path"
 	"text/template"
 
 	"github.com/lyswifter/ic-auth/util"
@@ -41,11 +42,13 @@ func NewDfxjson(targetpath string, source string, canistername string) error {
 		return err
 	}
 
-	fmt.Printf("dfxjson: %s", bytew.String())
+	fmt.Printf("dfxjson: %s %+v\n", bytew.String(), dfxjson)
+	f, err := os.Create(path.Join(targetpath, "dfx.json"))
+	if err != nil {
+		return err
+	}
 
-	// place to the root path of project
-
-	err = os.WriteFile("dfx.json", bytew.Bytes(), 0766)
+	_, err = f.Write(bytew.Bytes())
 	if err != nil {
 		return err
 	}

@@ -60,6 +60,10 @@ var DeployCmd = cli.Command{
 		islocal := cctx.Bool("islocal")
 		fmt.Printf("Will deploy repo: %s framework: %s target: %s islocal: %t\n", repo, target, framework, islocal)
 
+		canistername := cctx.String("cname")
+		outsource := cctx.String("outsource")
+		fmt.Printf("canistername: %s outsource: %s\n", canistername, outsource)
+
 		logpath, err := homedir.Expand("~/log")
 		if err != nil {
 			return err
@@ -92,7 +96,7 @@ var DeployCmd = cli.Command{
 				}
 			}
 		case "reactjs":
-			cinfos, err := deploy.DeployWithReactjs(target, f, cctx.String("cname"), cctx.String("outsource"), repo, islocal, framework)
+			cinfos, err := deploy.DeployWithReactjs(target, f, canistername, outsource, repo, islocal, framework)
 			if err != nil {
 				return err
 			}

@@ -14,23 +14,38 @@ import (
 	"github.com/lyswifter/ic-auth/types"
 	"github.com/lyswifter/ic-auth/util"
 	"github.com/shirou/gopsutil/v3/process"
+	"golang.org/x/xerrors"
 )
+
+var noProcessErr = xerrors.New("process not found")
 
 func KillProcess(name string) error {
 	processes, err := process.Processes()
 	if err != nil {
 		return err
 	}
+
+	var noProcess = true
 	for _, p := range processes {
 		n, err := p.Name()
 		if err != nil {
 			return err
 		}
-		if n == name {
-			return p.Kill()
+
+		if n == name || strings.Contains(n, name) {
+			noProcess = false
+			err = p.Kill()
+			if err != nil {
+				continue
+			}
 		}
 	}
-	return fmt.Errorf("process not found")
+
+	if noProcess {
+		return noProcessErr
+	}
+
+	return nil
 }
 
 func getController(targetpath string, islocal bool) (string, error) {
@@ -59,16 +74,13 @@ func getController(targetpath string, islocal bool) (string, error) {
 
 func restartDfx(targetpath string, islocal bool) error {
 	if islocal {
-		err := KillProcess("dfx")
-		if err != nil {
-			return err
-		}
+		_ = KillProcess("dfx")
 
 		startCmd := exec.Command("dfx", "start", "--background", "--clean")
 		startCmd.Dir = targetpath
 		startCmd.Stderr = os.Stderr
 		startCmd.Stdout = os.Stdout
-		err = startCmd.Run()
+		err := startCmd.Run()
 		if err != nil {
 			return err
 		}
