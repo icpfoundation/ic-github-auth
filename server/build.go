@@ -165,10 +165,17 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			go func() error {
 				defer f.Close()
 
-				//npm install and npm run build
-				err := deploy.DeployWithReactjs(targetpath, f, canistername, resource, reponame, islocal, framework)
+				//npm install and npm run build and dfx deploy
+				cinfos, err := deploy.DeployWithReactjs(targetpath, f, canistername, resource, reponame, islocal, framework)
 				if err != nil {
 					return err
+				}
+
+				for _, v := range cinfos {
+					err := Authdb.SaveCanisterInfo(context.TODO(), v)
+					if err != nil {
+						return err
+					}
 				}
 
 				return nil

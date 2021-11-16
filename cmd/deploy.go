@@ -44,6 +44,14 @@ var DeployCmd = cli.Command{
 			Name:  "output",
 			Usage: "Specify output log file location",
 		},
+		&cli.StringFlag{
+			Name:  "cname",
+			Usage: "Specify canister name if there is no one exist",
+		},
+		&cli.StringFlag{
+			Name:  "outsource",
+			Usage: "Specify build output source file location",
+		},
 	},
 	Action: func(cctx *cli.Context) error {
 		framework := cctx.String("framework")
@@ -83,7 +91,18 @@ var DeployCmd = cli.Command{
 					return err
 				}
 			}
+		case "reactjs":
+			cinfos, err := deploy.DeployWithReactjs(target, f, cctx.String("cname"), cctx.String("outsource"), repo, islocal, framework)
+			if err != nil {
+				return err
+			}
 
+			for _, v := range cinfos {
+				err := authdb.SaveCanisterInfo(context.TODO(), v)
+				if err != nil {
+					return err
+				}
+			}
 		default:
 		}
 

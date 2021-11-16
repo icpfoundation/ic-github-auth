@@ -13,7 +13,25 @@ import (
 
 	"github.com/lyswifter/ic-auth/types"
 	"github.com/lyswifter/ic-auth/util"
+	"github.com/shirou/gopsutil/v3/process"
 )
+
+func KillProcess(name string) error {
+	processes, err := process.Processes()
+	if err != nil {
+		return err
+	}
+	for _, p := range processes {
+		n, err := p.Name()
+		if err != nil {
+			return err
+		}
+		if n == name {
+			return p.Kill()
+		}
+	}
+	return fmt.Errorf("process not found")
+}
 
 func getController(targetpath string, islocal bool) (string, error) {
 	// dfx wallet --network ic addresses
@@ -39,10 +57,35 @@ func getController(targetpath string, islocal bool) (string, error) {
 	return b.String(), nil
 }
 
+func restartDfx(targetpath string, islocal bool) error {
+	if islocal {
+		err := KillProcess("dfx")
+		if err != nil {
+			return err
+		}
+
+		startCmd := exec.Command("dfx", "start", "--background", "--clean")
+		startCmd.Dir = targetpath
+		startCmd.Stderr = os.Stderr
+		startCmd.Stdout = os.Stdout
+		err = startCmd.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string) ([]types.CanisterInfo, error) {
 
 	var deploycmd *exec.Cmd
 	if islocal {
+		err := restartDfx(targetpath, islocal)
+		if err != nil {
+			return nil, err
+		}
+
 		deploycmd = exec.Command("dfx", "deploy")
 	} else {
 		deploycmd = exec.Command("dfx", "deploy", "--network", "ic")
