@@ -17,8 +17,12 @@ var InitCmd = cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-		rdb, idb := db.DataStores(cctx.String("repo"))
-		util.Infof("rdb: %+v idb", rdb, idb)
+		rdb, idb, err := db.DataStores(cctx.String("repo"))
+		if err != nil {
+			return err
+		}
+
+		util.Infof("rdb: %+v idb: %+v", rdb, idb)
 		return nil
 	},
 }

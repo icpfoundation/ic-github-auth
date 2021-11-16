@@ -1,6 +1,9 @@
 package deploy
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 func DeployWithReactjs(path string, f *os.File, canister string, resource string, repo string, islocal bool, framework string) error {
 	err := NpmInstall(path, f)
@@ -18,10 +21,12 @@ func DeployWithReactjs(path string, f *os.File, canister string, resource string
 		return err
 	}
 
-	err = DeployWithDfx(path, f, repo, islocal, framework)
+	cinfos, err := DeployWithDfx(path, f, repo, islocal, framework)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("canister infos: %+v", cinfos)
 
 	return nil
 }

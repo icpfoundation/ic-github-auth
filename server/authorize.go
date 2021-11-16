@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lyswifter/ic-auth/db"
 	"github.com/lyswifter/ic-auth/params"
 	"github.com/lyswifter/ic-auth/util"
 )
@@ -28,7 +27,7 @@ func HandleGithubAuthorizeAPI(r *gin.Engine) {
 			return
 		}
 
-		err := db.SaveInstallCode(context.TODO(), state, installationId)
+		err := Authdb.SaveInstallCode(context.TODO(), state, installationId)
 		if err != nil {
 			return
 		}
@@ -107,7 +106,7 @@ func getAccessToken(code string, redirect_uri string, state string) error {
 		state = "xxxxxxx"
 	}
 
-	err = db.SaveAccessToken(context.TODO(), state, body)
+	err = Authdb.SaveAccessToken(context.TODO(), state, body)
 	if err != nil {
 		util.Errorf("save access token err %s", err.Error())
 		return err

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lyswifter/ic-auth/db"
 	"github.com/lyswifter/ic-auth/util"
 )
 
@@ -27,7 +26,7 @@ func HandleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
-		code, err := db.ReadInstallCode(context.TODO(), state)
+		code, err := Authdb.ReadInstallCode(context.TODO(), state)
 		if err != nil {
 			c.JSON(502, gin.H{
 				"status":  "Err",
@@ -36,7 +35,7 @@ func HandleAccessTokenRedirectAPI(r *gin.Engine) {
 			return
 		}
 
-		ret, err := db.ReadAccessToken(context.TODO(), state)
+		ret, err := Authdb.ReadAccessToken(context.TODO(), state)
 		if err != nil {
 			c.JSON(502, gin.H{
 				"status":  "Err",

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -137,9 +138,16 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					return err
 				}
 
-				err = deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework)
+				cinfos, err := deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework)
 				if err != nil {
 					return err
+				}
+
+				for _, v := range cinfos {
+					err := Authdb.SaveCanisterInfo(context.TODO(), v)
+					if err != nil {
+						return err
+					}
 				}
 
 				return nil

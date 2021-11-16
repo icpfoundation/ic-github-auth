@@ -3,7 +3,6 @@ package deploy
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lyswifter/ic-auth/db"
 	"github.com/lyswifter/ic-auth/types"
 	"github.com/lyswifter/ic-auth/util"
 )
@@ -41,7 +39,7 @@ func getController(targetpath string, islocal bool) (string, error) {
 	return b.String(), nil
 }
 
-func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string) error {
+func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string) ([]types.CanisterInfo, error) {
 
 	var deploycmd *exec.Cmd
 	if islocal {
@@ -54,18 +52,21 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 	stderr, err := deploycmd.StderrPipe()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	stdout, err := deploycmd.StdoutPipe()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	deploycmd.Start()
 
 	errReader := bufio.NewReader(stderr)
 	outReader := bufio.NewReader(stdout)
+
+	canisterName := []string{}
+	canisterId := []string{}
 
 	for {
 		line, err := errReader.ReadString('\n')
@@ -75,6 +76,16 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 		if err != nil {
 			break
+		}
+
+		if strings.Contains(line, "canister_id") {
+			name, id, err := extractCanisterInfo(line)
+			if err != nil {
+				break
+			}
+
+			canisterName = append(canisterName, name)
+			canisterId = append(canisterId, id)
 		}
 
 		// write local
@@ -94,6 +105,16 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			break
 		}
 
+		if strings.Contains(line, "canister_id") {
+			name, id, err := extractCanisterInfo(line)
+			if err != nil {
+				break
+			}
+
+			canisterName = append(canisterName, name)
+			canisterId = append(canisterId, id)
+		}
+
 		// write local
 		_, err = f.WriteString(util.Format(line))
 		if err != nil {
@@ -107,8 +128,12 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 	controller, err := getController(targetpath, islocal)
 	if err != nil {
-		fmt.Printf("get controller: %s\n", err.Error())
-		return err
+		return nil, err
+	}
+
+	var network string = "ic"
+	if islocal {
+		network = "local"
 	}
 
 	//read canister id
@@ -116,24 +141,21 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 	fmt.Printf("canister ids file path: %s\n", cinfofile)
 
+	cinfos := []types.CanisterInfo{}
+
 	if util.Exists(cinfofile) {
 		ret, err := os.ReadFile(cinfofile)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		var infos map[string]CanisterID = make(map[string]CanisterID)
 		err = json.Unmarshal(ret, &infos)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		fmt.Printf("canister info map: %+v", infos)
-
-		var network string = "ic"
-		if islocal {
-			network = "local"
-		}
 
 		for k, v := range infos {
 			var ctype = "asssets"
@@ -150,17 +172,42 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 				Framework:    framework,
 				Network:      network,
 			}
+			cinfos = append(cinfos, cinfo)
+		}
+	} else {
+		for i, v := range canisterName {
+			id := canisterId[i]
+			name := v
 
-			fmt.Printf("cinfo: %+v", cinfo)
-
-			err = db.SaveCanisterInfo(context.TODO(), cinfo)
-			if err != nil {
-				return err
+			cinfo := types.CanisterInfo{
+				Repo:         repo,
+				Controller:   controller,
+				CanisterName: name,
+				CanisterID:   id,
+				CanisterType: "",
+				Framework:    framework,
+				Network:      network,
 			}
+			cinfos = append(cinfos, cinfo)
 		}
 	}
 
 	deploycmd.Wait()
 
-	return nil
+	return cinfos, nil
+}
+
+func extractCanisterInfo(input string) (string, string, error) {
+	var split = "with canister_id"
+	arr := strings.Split(input, split)
+
+	first := strings.TrimSpace(arr[0])
+	last := strings.TrimSpace(arr[1])
+
+	first = strings.TrimSuffix(first, ",")
+	firstarr := strings.Split(first, " ")
+	canisterName := firstarr[len(firstarr)-1]
+
+	fmt.Printf("input: %s canister name: %s canister id: %s", input, canisterName, last)
+	return canisterName, last, nil
 }

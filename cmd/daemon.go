@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lyswifter/ic-auth/db"
 	"github.com/lyswifter/ic-auth/server"
 	"github.com/lyswifter/ic-auth/util"
 	"github.com/mitchellh/go-homedir"
@@ -19,7 +20,26 @@ import (
 var DaemonCmd = cli.Command{
 	Name:        "daemon",
 	Description: "Start ic auth daemon",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "repo",
+			Value: "~/.icauth",
+			Usage: "Specify the location of database",
+		},
+	},
 	Action: func(cctx *cli.Context) error {
+		repodir, err := homedir.Expand(cctx.String("repo"))
+		if err != nil {
+			return err
+		}
+
+		authdb, err := db.SetupAuth(repodir)
+		if err != nil {
+			return err
+		}
+		server.Authdb = authdb
+
+		fmt.Printf("server.Authdb: %+v\n", server.Authdb)
 
 		go setupAuthServer()
 
@@ -40,7 +60,6 @@ var DaemonCmd = cli.Command{
 				return nil
 			}
 		}
-
 	},
 }
 
@@ -76,12 +95,12 @@ func setupAuthServer() {
 	server.HandleCanisterListAPI(r)
 	server.HandleCanisterInfoAPI(r)
 
-	// r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 
-	certpath, err := homedir.Expand("~/.cert")
-	if err != nil {
-		return
-	}
+	// certpath, err := homedir.Expand("~/.cert")
+	// if err != nil {
+	// 	return
+	// }
 
-	r.RunTLS("0.0.0.0:9091", path.Join(certpath, "5537464__skyipfs.com.pem"), path.Join(certpath, "5537464__skyipfs.com.key"))
+	// r.RunTLS("0.0.0.0:9091", path.Join(certpath, "5537464__skyipfs.com.pem"), path.Join(certpath, "5537464__skyipfs.com.key"))
 }

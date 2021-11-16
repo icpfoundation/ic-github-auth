@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lyswifter/ic-auth/db"
 )
 
 func HandleCanisterListAPI(r *gin.Engine) {
@@ -17,7 +16,7 @@ func HandleCanisterListAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
 
-		ret, err := db.ReadCanisterList(context.TODO())
+		ret, err := Authdb.ReadCanisterList(context.TODO())
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
@@ -51,7 +50,7 @@ func HandleCanisterInfoAPI(r *gin.Engine) {
 			return
 		}
 
-		info, err := db.ReadCanisterInfo(context.TODO(), canisterid)
+		info, err := Authdb.ReadCanisterInfo(context.TODO(), canisterid)
 		if err != nil {
 			c.String(http.StatusBadRequest, "read canister info err: %s", err.Error())
 			return

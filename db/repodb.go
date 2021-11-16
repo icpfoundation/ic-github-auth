@@ -12,24 +12,18 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func SaveCanisterInfo(ctx context.Context, canisterInfo types.CanisterInfo) error {
+func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.CanisterInfo) error {
 	if canisterInfo.CanisterID == "" {
 		return xerrors.New("canister id is nil")
 	}
 
-	db, err := LoadRepoInfoDB(RepoDB)
-	if err != nil {
-		return err
-	}
-
 	key := datastore.NewKey(canisterInfo.CanisterID)
-
 	info, err := json.Marshal(canisterInfo)
 	if err != nil {
 		return err
 	}
 
-	err = db.Put(ctx, key, info)
+	err = db.UserDb.Put(ctx, key, info)
 	if err != nil {
 		return err
 	}
@@ -39,21 +33,15 @@ func SaveCanisterInfo(ctx context.Context, canisterInfo types.CanisterInfo) erro
 	return nil
 }
 
-func ReadCanisterInfo(ctx context.Context, id string) ([]byte, error) {
-	db, err := LoadRepoInfoDB(RepoDB)
-	if err != nil {
-		return nil, err
-	}
-
+func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, error) {
 	key := datastore.NewKey(id)
-
-	ishas, err := db.Has(ctx, key)
+	ishas, err := db.UserDb.Has(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
 	if ishas {
-		ret, err := db.Get(ctx, key)
+		ret, err := db.UserDb.Get(ctx, key)
 		if err != nil {
 			return nil, err
 		}
@@ -65,13 +53,8 @@ func ReadCanisterInfo(ctx context.Context, id string) ([]byte, error) {
 	return nil, nil
 }
 
-func ReadCanisterList(ctx context.Context) ([]string, error) {
-	db, err := LoadRepoInfoDB(RepoDB)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := db.Query(ctx, query.Query{})
+func (db *AuthDB) ReadCanisterList(ctx context.Context) ([]string, error) {
+	res, err := db.UserDb.Query(ctx, query.Query{})
 	if err != nil {
 		return nil, err
 	}
