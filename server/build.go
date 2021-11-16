@@ -154,10 +154,10 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			}()
 
 		case "reactjs":
-			canistername := c.Query("canistername")
+			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
-			if canistername == "" || resource == "" {
+			if cname == "" || resource == "" {
 				c.String(http.StatusBadRequest, "canister name and resource path must provide")
 				return
 			}
@@ -166,7 +166,34 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				defer f.Close()
 
 				//npm install and npm run build and dfx deploy
-				cinfos, err := deploy.DeployWithReactjs(targetpath, f, canistername, resource, reponame, islocal, framework)
+				cinfos, err := deploy.DeployWithReactjs(targetpath, f, cname, resource, reponame, islocal, framework)
+				if err != nil {
+					return err
+				}
+
+				for _, v := range cinfos {
+					err := Authdb.SaveCanisterInfo(context.TODO(), v)
+					if err != nil {
+						return err
+					}
+				}
+
+				return nil
+			}()
+		case "nuxtjs":
+			cname := c.Query("canistername")
+			resource := c.Query("resourcepath")
+
+			if cname == "" || resource == "" {
+				c.String(http.StatusBadRequest, "canister name and resource path must provide")
+				return
+			}
+
+			go func() error {
+				defer f.Close()
+
+				//npm install and npm run build and dfx deploy
+				cinfos, err := deploy.DeployWithReactjs(targetpath, f, cname, resource, reponame, islocal, framework)
 				if err != nil {
 					return err
 				}

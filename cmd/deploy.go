@@ -107,6 +107,18 @@ var DeployCmd = cli.Command{
 					return err
 				}
 			}
+		case "nuxtjs":
+			cinfos, err := deploy.DeployWithNuxt(target, f, canistername, outsource, repo, islocal, framework)
+			if err != nil {
+				return err
+			}
+
+			for _, v := range cinfos {
+				err := authdb.SaveCanisterInfo(context.TODO(), v)
+				if err != nil {
+					return err
+				}
+			}
 		default:
 		}
 

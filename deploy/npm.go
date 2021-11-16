@@ -27,8 +27,8 @@ const templateText = `{
 	}
   }`
 
+// generate dfxjson
 func NewDfxjson(targetpath string, source string, canistername string) error {
-	//generate dfxjson
 	dfxjson := Dfxjson{
 		CanisterName: canistername,
 		ResourcePath: source,
@@ -56,8 +56,8 @@ func NewDfxjson(targetpath string, source string, canistername string) error {
 	return nil
 }
 
+// npm install
 func NpmInstall(targetpath string, f *os.File) error {
-	//npm install
 	installCmd := exec.Command("npm", "install")
 	installCmd.Dir = targetpath
 
@@ -115,9 +115,68 @@ func NpmInstall(targetpath string, f *os.File) error {
 	return nil
 }
 
+// npm run build
 func NpmRunBuild(targetpath string, f *os.File) error {
-	//npm install
 	npmBuildCmd := exec.Command("npm", "run", "build")
+	npmBuildCmd.Dir = targetpath
+
+	stderr, err := npmBuildCmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	stdout, err := npmBuildCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	npmBuildCmd.Start()
+
+	errReader := bufio.NewReader(stderr)
+	outReader := bufio.NewReader(stdout)
+
+	for {
+		line, err := errReader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			break
+		}
+
+		// write local
+		_, err = f.WriteString(util.Format(line))
+		if err != nil {
+			break
+		}
+	}
+
+	for {
+		line, err := outReader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			break
+		}
+
+		// write local
+		_, err = f.WriteString(util.Format(line))
+		if err != nil {
+			break
+		}
+	}
+
+	npmBuildCmd.Wait()
+
+	return nil
+}
+
+// npm run generate
+func NpmRunGenerate(targetpath string, f *os.File) error {
+	npmBuildCmd := exec.Command("npm", "run", "generate")
 	npmBuildCmd.Dir = targetpath
 
 	stderr, err := npmBuildCmd.StderrPipe()
