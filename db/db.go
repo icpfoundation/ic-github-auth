@@ -36,8 +36,8 @@ func setupLevelDs(path string, readonly bool) (datastore.Batching, error) {
 	return db, err
 }
 
-func DataStores() (datastore.Batching, datastore.Batching) {
-	repodir, err := homedir.Expand(params.RepoPath)
+func DataStores(repopath string) (datastore.Batching, datastore.Batching) {
+	repodir, err := homedir.Expand(repopath)
 	if err != nil {
 		return nil, nil
 	}

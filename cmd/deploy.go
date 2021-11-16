@@ -7,10 +7,13 @@ var DeployCmd = cli.Command{
 	Description: "Deploy app to Internet Computer",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name: "path",
+			Name:  "type",
+			Value: "dfx",
+			Usage: "Specify frontend framework to use [reactjs, nuxtjs, nextjs, vuejs, hugo]",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
+		//
 
 		return nil
 	},

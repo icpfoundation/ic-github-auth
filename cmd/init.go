@@ -11,14 +11,13 @@ var InitCmd = cli.Command{
 	Description: "Initial Internet Computer authorization repo",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "path",
+			Name:  "repo",
 			Value: "~/.icauth",
 			Usage: "Specify the location of database",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-
-		rdb, idb := db.DataStores()
+		rdb, idb := db.DataStores(cctx.String("repo"))
 		util.Infof("rdb: %+v idb", rdb, idb)
 		return nil
 	},
