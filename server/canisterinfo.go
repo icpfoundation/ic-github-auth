@@ -19,6 +19,7 @@ func HandleCanisterListAPI(r *gin.Engine) {
 		controller := c.Query("controller")
 		if controller == "" {
 			c.String(http.StatusBadRequest, "controller must provide")
+			return
 		}
 
 		ret, err := Authdb.ReadCanisterList(context.TODO(), controller)

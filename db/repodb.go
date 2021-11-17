@@ -23,12 +23,12 @@ func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.Canis
 		return err
 	}
 
-	err = db.UserDb.Put(ctx, key, info)
+	err = db.RepoDb.Put(ctx, key, info)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("save cinfo ok: %s", canisterInfo.CanisterID)
+	fmt.Printf("save cinfo for: %s  ok", canisterInfo.Controller)
 
 	return nil
 }
@@ -41,12 +41,13 @@ func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, erro
 	}
 
 	if ishas {
-		ret, err := db.UserDb.Get(ctx, key)
+		ret, err := db.RepoDb.Get(ctx, key)
 		if err != nil {
 			return nil, err
 		}
 
 		fmt.Printf("read cinfo ok: %s", id)
+
 		return ret, nil
 	}
 
@@ -54,11 +55,11 @@ func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, erro
 }
 
 func (db *AuthDB) ReadCanisterList(ctx context.Context, controller string) ([]string, error) {
-	res, err := db.UserDb.Query(ctx, query.Query{
+	res, err := db.RepoDb.Query(ctx, query.Query{
 		Filters: []query.Filter{
 			query.FilterKeyCompare{
 				Op:  query.Equal,
-				Key: controller,
+				Key: datastore.NewKey(controller).String(),
 			},
 		},
 	})
@@ -95,6 +96,11 @@ func (db *AuthDB) ReadCanisterList(ctx context.Context, controller string) ([]st
 		canisterids = append(canisterids, cinfo.CanisterID)
 	}
 
+	if errs != nil {
+		return nil, errs
+	}
+
 	fmt.Printf("read canister infos ok, len %d\n", len(canisterids))
+
 	return canisterids, nil
 }
