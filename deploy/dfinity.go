@@ -48,9 +48,8 @@ func KillProcess(name string) error {
 	return nil
 }
 
+// dfx wallet --network ic addresses
 func getController(targetpath string, islocal bool) (string, error) {
-	// dfx wallet --network ic addresses
-
 	var idcmd *exec.Cmd
 	if islocal {
 		idcmd = exec.Command("dfx", "wallet", "addresses")
@@ -69,7 +68,11 @@ func getController(targetpath string, islocal bool) (string, error) {
 		return "", err
 	}
 
-	return b.String(), nil
+	var out = b.String()
+	out = strings.Split(out, ",")[0]
+	out = strings.Split(out, ": ")[1]
+
+	return out, nil
 }
 
 func restartDfx(targetpath string, islocal bool) error {

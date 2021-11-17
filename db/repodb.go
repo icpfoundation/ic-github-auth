@@ -13,11 +13,11 @@ import (
 )
 
 func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.CanisterInfo) error {
-	if canisterInfo.CanisterID == "" {
+	if canisterInfo.Controller == "" {
 		return xerrors.New("canister id is nil")
 	}
 
-	key := datastore.NewKey(canisterInfo.CanisterID)
+	key := datastore.NewKey(canisterInfo.Controller)
 	info, err := json.Marshal(canisterInfo)
 	if err != nil {
 		return err
@@ -53,8 +53,15 @@ func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, erro
 	return nil, nil
 }
 
-func (db *AuthDB) ReadCanisterList(ctx context.Context) ([]string, error) {
-	res, err := db.UserDb.Query(ctx, query.Query{})
+func (db *AuthDB) ReadCanisterList(ctx context.Context, controller string) ([]string, error) {
+	res, err := db.UserDb.Query(ctx, query.Query{
+		Filters: []query.Filter{
+			query.FilterKeyCompare{
+				Op:  query.Equal,
+				Key: controller,
+			},
+		},
+	})
 	if err != nil {
 		return nil, err
 	}

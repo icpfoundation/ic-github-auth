@@ -16,7 +16,12 @@ func HandleCanisterListAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
 
-		ret, err := Authdb.ReadCanisterList(context.TODO())
+		controller := c.Query("controller")
+		if controller == "" {
+			c.String(http.StatusBadRequest, "controller must provide")
+		}
+
+		ret, err := Authdb.ReadCanisterList(context.TODO(), controller)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
