@@ -38,24 +38,6 @@ var DaemonCmd = cli.Command{
 
 		setupAuthServer()
 
-		// ticker := time.NewTicker(30 * time.Second)
-		// ctx := context.Background()
-		// sigChan := make(chan os.Signal, 2)
-
-		// util.Infof("Internet Computer auth is running...")
-
-		// for {
-		// 	select {
-		// 	case <-ticker.C:
-		// 		util.Infof("I am running")
-		// 	case <-ctx.Done():
-		// 		util.Infof("Shutting down..")
-		// 		util.Infof("Graceful shutdown successful")
-		// 		signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
-		// 		return nil
-		// 	}
-		// }
-
 		return nil
 	},
 }
