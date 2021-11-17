@@ -17,7 +17,16 @@ func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.Canis
 		return xerrors.New("canister id is nil")
 	}
 
-	key := datastore.NewKey(canisterInfo.Controller)
+	key := datastore.NewKey(fmt.Sprintf("%s/%s", canisterInfo.Controller, canisterInfo.CanisterID))
+	ishas, err := db.RepoDb.Has(ctx, key)
+	if err != nil {
+		return err
+	}
+
+	if ishas {
+		return xerrors.Errorf("record already exist for: %s", key.String())
+	}
+
 	info, err := json.Marshal(canisterInfo)
 	if err != nil {
 		return err
@@ -28,14 +37,13 @@ func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.Canis
 		return err
 	}
 
-	fmt.Printf("save cinfo for: %s  ok", canisterInfo.Controller)
-
+	fmt.Printf("save cinfo for: %s ok", key.String())
 	return nil
 }
 
-func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, error) {
-	key := datastore.NewKey(id)
-	ishas, err := db.UserDb.Has(ctx, key)
+func (db *AuthDB) ReadCanisterInfo(ctx context.Context, controller string, id string) ([]byte, error) {
+	key := datastore.NewKey(fmt.Sprintf("%s/%s", controller, id))
+	ishas, err := db.RepoDb.Has(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +55,6 @@ func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, erro
 		}
 
 		fmt.Printf("read cinfo ok: %s", id)
-
 		return ret, nil
 	}
 
@@ -57,9 +64,8 @@ func (db *AuthDB) ReadCanisterInfo(ctx context.Context, id string) ([]byte, erro
 func (db *AuthDB) ReadCanisterList(ctx context.Context, controller string) ([]string, error) {
 	res, err := db.RepoDb.Query(ctx, query.Query{
 		Filters: []query.Filter{
-			query.FilterKeyCompare{
-				Op:  query.Equal,
-				Key: datastore.NewKey(controller).String(),
+			query.FilterKeyPrefix{
+				Prefix: datastore.NewKey(controller).String(),
 			},
 		},
 	})
