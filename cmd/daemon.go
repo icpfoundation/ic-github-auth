@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
@@ -95,12 +96,12 @@ func setupAuthServer() {
 	server.HandleCanisterListAPI(r)
 	server.HandleCanisterInfoAPI(r)
 
-	r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	// r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 
-	// certpath, err := homedir.Expand("~/.cert")
-	// if err != nil {
-	// 	return
-	// }
+	certpath, err := homedir.Expand("~/.cert")
+	if err != nil {
+		return
+	}
 
-	// r.RunTLS("0.0.0.0:9091", path.Join(certpath, "5537464__skyipfs.com.pem"), path.Join(certpath, "5537464__skyipfs.com.key"))
+	r.RunTLS("0.0.0.0:9091", path.Join(certpath, "5537464__skyipfs.com.pem"), path.Join(certpath, "5537464__skyipfs.com.key"))
 }
