@@ -232,3 +232,62 @@ func NpmRunGenerate(targetpath string, f *os.File) error {
 
 	return nil
 }
+
+// npm run export
+func NpmRunExport(targetpath string, f *os.File) error {
+	npmBuildCmd := exec.Command("npm", "run", "export")
+	npmBuildCmd.Dir = targetpath
+
+	stderr, err := npmBuildCmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	stdout, err := npmBuildCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	npmBuildCmd.Start()
+
+	errReader := bufio.NewReader(stderr)
+	outReader := bufio.NewReader(stdout)
+
+	for {
+		line, err := errReader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			break
+		}
+
+		// write local
+		_, err = f.WriteString(util.Format(line))
+		if err != nil {
+			break
+		}
+	}
+
+	for {
+		line, err := outReader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			break
+		}
+
+		// write local
+		_, err = f.WriteString(util.Format(line))
+		if err != nil {
+			break
+		}
+	}
+
+	npmBuildCmd.Wait()
+
+	return nil
+}

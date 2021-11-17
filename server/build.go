@@ -207,6 +207,34 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 				return nil
 			}()
+
+		case "nextjs":
+			cname := c.Query("canistername")
+			resource := c.Query("resourcepath")
+
+			if cname == "" || resource == "" {
+				c.String(http.StatusBadRequest, "canister name and resource path must provide")
+				return
+			}
+
+			go func() error {
+				defer f.Close()
+
+				//npm install and npm run build and npm run export and dfx deploy
+				cinfos, err := deploy.DeployWithNext(targetpath, f, cname, resource, reponame, islocal, framework)
+				if err != nil {
+					return err
+				}
+
+				for _, v := range cinfos {
+					err := Authdb.SaveCanisterInfo(context.TODO(), v)
+					if err != nil {
+						return err
+					}
+				}
+
+				return nil
+			}()
 		default:
 		}
 
