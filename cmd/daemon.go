@@ -55,6 +55,8 @@ var DaemonCmd = cli.Command{
 		// 		return nil
 		// 	}
 		// }
+
+		return nil
 	},
 }
 
