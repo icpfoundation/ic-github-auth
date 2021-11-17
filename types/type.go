@@ -15,11 +15,14 @@ type CmdOutput struct {
 }
 
 type CanisterInfo struct {
-	Repo         string `json"repo"`
-	Controller   string `json:"controller"`
-	CanisterName string `json:"name"`
-	CanisterID   string `json:"id"`
-	CanisterType string `json:"type"`
-	Framework    string `json:"framework"`
-	Network      string `json:"network"`
+	Repo            string `json"repo"`
+	Owner           string `json:"owner"`
+	Controller      string `json:"controller"`
+	CanisterName    string `json:"name"`
+	CanisterID      string `json:"id"`
+	CanisterType    string `json:"type"`
+	Framework       string `json:"framework"`
+	Network         string `json:"network"`
+	CreateTimestamp string `json:"createtimestamp"`
+	UpdateTimestamp string `json:"updateTimestamp"`
 }

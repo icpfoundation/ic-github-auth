@@ -70,6 +70,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 		repourl := c.Query("repourl")
 		branch := c.Query("branch")
 		location := c.Query("location")
+		principle := c.Query("principle")
 
 		var islocal bool = false
 		if location == "local" {
@@ -144,6 +145,9 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				}
 
 				for _, v := range cinfos {
+					// add owner principle id to the canister info
+					v.Owner = principle
+
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
 						return err
@@ -172,6 +176,9 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				}
 
 				for _, v := range cinfos {
+					// add owner principle id to the canister info
+					v.Owner = principle
+
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
 						return err
@@ -199,6 +206,9 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				}
 
 				for _, v := range cinfos {
+					// add owner principle id to the canister info
+					v.Owner = principle
+
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
 						return err

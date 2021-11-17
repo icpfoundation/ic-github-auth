@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/lyswifter/ic-auth/types"
 	"github.com/lyswifter/ic-auth/util"
@@ -126,6 +127,8 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 	canisterName := []string{}
 	canisterId := []string{}
 
+	var hasAlreadyCreated bool = false
+
 	for {
 		line, err := errReader.ReadString('\n')
 		if err == io.EOF {
@@ -144,6 +147,10 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 			canisterName = append(canisterName, name)
 			canisterId = append(canisterId, id)
+		}
+
+		if strings.Contains(line, "All canisters have already been created.") {
+			hasAlreadyCreated = true
 		}
 
 		// write local
@@ -171,6 +178,10 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 
 			canisterName = append(canisterName, name)
 			canisterId = append(canisterId, id)
+		}
+
+		if strings.Contains(line, "All canisters have already been created.") {
+			hasAlreadyCreated = true
 		}
 
 		// write local
@@ -230,6 +241,13 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 				Framework:    framework,
 				Network:      network,
 			}
+
+			if hasAlreadyCreated {
+				cinfo.UpdateTimestamp = time.Now().String()
+			} else {
+				cinfo.CreateTimestamp = time.Now().String()
+				cinfo.UpdateTimestamp = time.Now().String()
+			}
 			cinfos = append(cinfos, cinfo)
 		}
 	} else {
@@ -245,6 +263,13 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 				CanisterType: "",
 				Framework:    framework,
 				Network:      network,
+			}
+
+			if hasAlreadyCreated {
+				cinfo.UpdateTimestamp = time.Now().String()
+			} else {
+				cinfo.CreateTimestamp = time.Now().String()
+				cinfo.UpdateTimestamp = time.Now().String()
 			}
 			cinfos = append(cinfos, cinfo)
 		}

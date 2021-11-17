@@ -17,7 +17,7 @@ func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.Canis
 		return xerrors.New("canister id is nil")
 	}
 
-	key := datastore.NewKey(fmt.Sprintf("%s/%s", canisterInfo.Controller, canisterInfo.CanisterID))
+	key := datastore.NewKey(fmt.Sprintf("%s/%s", canisterInfo.Owner, canisterInfo.CanisterID))
 	ishas, err := db.RepoDb.Has(ctx, key)
 	if err != nil {
 		return err
@@ -41,8 +41,8 @@ func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.Canis
 	return nil
 }
 
-func (db *AuthDB) ReadCanisterInfo(ctx context.Context, controller string, id string) ([]byte, error) {
-	key := datastore.NewKey(fmt.Sprintf("%s/%s", controller, id))
+func (db *AuthDB) ReadCanisterInfo(ctx context.Context, owner string, id string) ([]byte, error) {
+	key := datastore.NewKey(fmt.Sprintf("%s/%s", owner, id))
 	ishas, err := db.RepoDb.Has(ctx, key)
 	if err != nil {
 		return nil, err
@@ -61,11 +61,11 @@ func (db *AuthDB) ReadCanisterInfo(ctx context.Context, controller string, id st
 	return nil, nil
 }
 
-func (db *AuthDB) ReadCanisterList(ctx context.Context, controller string) ([]string, error) {
+func (db *AuthDB) ReadCanisterList(ctx context.Context, owner string) ([]string, error) {
 	res, err := db.RepoDb.Query(ctx, query.Query{
 		Filters: []query.Filter{
 			query.FilterKeyPrefix{
-				Prefix: datastore.NewKey(controller).String(),
+				Prefix: datastore.NewKey(owner).String(),
 			},
 		},
 	})
