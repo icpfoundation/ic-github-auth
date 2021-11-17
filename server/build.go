@@ -72,6 +72,11 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 		location := c.Query("location")
 		principle := c.Query("principle")
 
+		if principle == "" {
+			c.String(http.StatusBadRequest, "principle must provide")
+			return
+		}
+
 		var islocal bool = false
 		if location == "local" {
 			islocal = true

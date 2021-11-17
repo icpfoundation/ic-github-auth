@@ -9,8 +9,5 @@ func HandleRecordPrncipleAPI(r *gin.Engine) {
 		c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH")
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
 		c.Header("Access-Control-Max-Age", "3628800")
-
-		return
 	})
-
 }
