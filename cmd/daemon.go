@@ -1,18 +1,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"os"
-	"os/signal"
 	"path"
-	"syscall"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lyswifter/ic-auth/db"
 	"github.com/lyswifter/ic-auth/server"
-	"github.com/lyswifter/ic-auth/util"
 	"github.com/mitchellh/go-homedir"
 	"github.com/unrolled/secure"
 	"github.com/urfave/cli"
@@ -42,25 +36,25 @@ var DaemonCmd = cli.Command{
 
 		fmt.Printf("server.Authdb: %+v\n", server.Authdb)
 
-		go setupAuthServer()
+		setupAuthServer()
 
-		ticker := time.NewTicker(30 * time.Second)
-		ctx := context.Background()
-		sigChan := make(chan os.Signal, 2)
+		// ticker := time.NewTicker(30 * time.Second)
+		// ctx := context.Background()
+		// sigChan := make(chan os.Signal, 2)
 
-		util.Infof("Internet Computer auth is running...")
+		// util.Infof("Internet Computer auth is running...")
 
-		for {
-			select {
-			case <-ticker.C:
-				util.Infof("I am running")
-			case <-ctx.Done():
-				util.Infof("Shutting down..")
-				util.Infof("Graceful shutdown successful")
-				signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
-				return nil
-			}
-		}
+		// for {
+		// 	select {
+		// 	case <-ticker.C:
+		// 		util.Infof("I am running")
+		// 	case <-ctx.Done():
+		// 		util.Infof("Shutting down..")
+		// 		util.Infof("Graceful shutdown successful")
+		// 		signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
+		// 		return nil
+		// 	}
+		// }
 	},
 }
 
