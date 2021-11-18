@@ -169,9 +169,6 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			}()
 
 		case "reactjs":
-
-			defer f.Close()
-
 			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
@@ -204,9 +201,6 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				return nil
 			}()
 		case "nuxtjs":
-
-			defer f.Close()
-
 			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
@@ -240,9 +234,6 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			}()
 
 		case "nextjs":
-
-			defer f.Close()
-
 			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
