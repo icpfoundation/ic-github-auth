@@ -169,6 +169,9 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			}()
 
 		case "reactjs":
+
+			defer f.Close()
+
 			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
@@ -176,6 +179,8 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				c.String(http.StatusBadRequest, "canister name and resource path must provide")
 				return
 			}
+
+			util.Infof("build reactjs for: %s %s", cname, resource)
 
 			go func() error {
 				defer f.Close()
@@ -199,6 +204,9 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				return nil
 			}()
 		case "nuxtjs":
+
+			defer f.Close()
+
 			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
@@ -206,6 +214,8 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				c.String(http.StatusBadRequest, "canister name and resource path must provide")
 				return
 			}
+
+			util.Infof("build nuxtjs for: %s %s", cname, resource)
 
 			go func() error {
 				defer f.Close()
@@ -230,6 +240,9 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			}()
 
 		case "nextjs":
+
+			defer f.Close()
+
 			cname := c.Query("canistername")
 			resource := c.Query("resourcepath")
 
@@ -237,6 +250,8 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 				c.String(http.StatusBadRequest, "canister name and resource path must provide")
 				return
 			}
+
+			util.Infof("build nextjs for: %s %s", cname, resource)
 
 			go func() error {
 				defer f.Close()
