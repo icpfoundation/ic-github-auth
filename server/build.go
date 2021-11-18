@@ -111,7 +111,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
-		_, err = f.WriteString("Start build and deploy canister")
+		_, err = f.WriteString(util.Format("Start build and deploy canister\n"))
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return

@@ -72,7 +72,7 @@ func NpmInstall(targetpath string, f *os.File) error {
 		return err
 	}
 
-	_, err = f.WriteString(util.Format(installCmd.String()))
+	_, err = f.WriteString(util.Format(installCmd.String() + "\n"))
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func NpmRunBuild(targetpath string, f *os.File) error {
 		return err
 	}
 
-	_, err = f.WriteString(util.Format(npmBuildCmd.String()))
+	_, err = f.WriteString(util.Format(npmBuildCmd.String() + "\n"))
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func NpmRunGenerate(targetpath string, f *os.File) error {
 		return err
 	}
 
-	_, err = f.WriteString(util.Format(npmBuildCmd.String()))
+	_, err = f.WriteString(util.Format(npmBuildCmd.String() + "\n"))
 	if err != nil {
 		return err
 	}
@@ -264,7 +264,7 @@ func NpmRunExport(targetpath string, f *os.File) error {
 		return err
 	}
 
-	_, err = f.WriteString(util.Format(npmBuildCmd.String()))
+	_, err = f.WriteString(util.Format(npmBuildCmd.String() + "\n"))
 	if err != nil {
 		return err
 	}
