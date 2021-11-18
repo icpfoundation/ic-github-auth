@@ -53,9 +53,9 @@ func KillProcess(name string) error {
 func getController(targetpath string, islocal bool) (string, error) {
 	var idcmd *exec.Cmd
 	if islocal {
-		idcmd = exec.Command("dfx", "wallet", "addresses")
+		idcmd = exec.Command("dfx", "identity", "get-wallet")
 	} else {
-		idcmd = exec.Command("dfx", "wallet", "--network", "ic", "addresses")
+		idcmd = exec.Command("dfx", "identity", "--network", "ic", "get-wallet")
 	}
 
 	idcmd.Dir = targetpath
@@ -70,8 +70,8 @@ func getController(targetpath string, islocal bool) (string, error) {
 	}
 
 	var out = b.String()
-	out = strings.Split(out, ",")[0]
-	out = strings.Split(out, ": ")[1]
+	// out = strings.Split(out, ",")[0]
+	// out = strings.Split(out, ": ")[1]
 
 	return out, nil
 }
