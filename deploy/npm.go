@@ -58,6 +58,7 @@ func NewDfxjson(targetpath string, source string, canistername string) error {
 
 // npm install
 func NpmInstall(targetpath string, f *os.File) error {
+
 	installCmd := exec.Command("npm", "install")
 	installCmd.Dir = targetpath
 
@@ -67,6 +68,11 @@ func NpmInstall(targetpath string, f *os.File) error {
 	}
 
 	stdout, err := installCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(util.Format(installCmd.String()))
 	if err != nil {
 		return err
 	}
@@ -130,6 +136,11 @@ func NpmRunBuild(targetpath string, f *os.File) error {
 		return err
 	}
 
+	_, err = f.WriteString(util.Format(npmBuildCmd.String()))
+	if err != nil {
+		return err
+	}
+
 	npmBuildCmd.Start()
 
 	errReader := bufio.NewReader(stderr)
@@ -189,6 +200,11 @@ func NpmRunGenerate(targetpath string, f *os.File) error {
 		return err
 	}
 
+	_, err = f.WriteString(util.Format(npmBuildCmd.String()))
+	if err != nil {
+		return err
+	}
+
 	npmBuildCmd.Start()
 
 	errReader := bufio.NewReader(stderr)
@@ -244,6 +260,11 @@ func NpmRunExport(targetpath string, f *os.File) error {
 	}
 
 	stdout, err := npmBuildCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(util.Format(npmBuildCmd.String()))
 	if err != nil {
 		return err
 	}

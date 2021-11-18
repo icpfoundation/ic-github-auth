@@ -111,6 +111,12 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			return
 		}
 
+		_, err = f.WriteString("Start build and deploy canister")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		if util.Exists(path.Join(targetpath, ".git")) {
 			pullcmd := exec.Command("git", "pull")
 			pullcmd.Dir = targetpath
