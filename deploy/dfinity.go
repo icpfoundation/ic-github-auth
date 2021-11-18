@@ -69,11 +69,7 @@ func getController(targetpath string, islocal bool) (string, error) {
 		return "", err
 	}
 
-	var out = b.String()
-	// out = strings.Split(out, ",")[0]
-	// out = strings.Split(out, ": ")[1]
-
-	return out, nil
+	return b.String(), nil
 }
 
 func restartDfx(targetpath string, islocal bool) error {
