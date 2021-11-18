@@ -243,10 +243,10 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			}
 
 			if hasAlreadyCreated {
-				cinfo.UpdateTimestamp = time.Now().String()
+				cinfo.UpdateTimestamp = time.Now().Unix()
 			} else {
-				cinfo.CreateTimestamp = time.Now().String()
-				cinfo.UpdateTimestamp = time.Now().String()
+				cinfo.CreateTimestamp = time.Now().Unix()
+				cinfo.UpdateTimestamp = time.Now().Unix()
 			}
 			cinfos = append(cinfos, cinfo)
 		}
@@ -266,10 +266,10 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			}
 
 			if hasAlreadyCreated {
-				cinfo.UpdateTimestamp = time.Now().String()
+				cinfo.UpdateTimestamp = time.Now().Unix()
 			} else {
-				cinfo.CreateTimestamp = time.Now().String()
-				cinfo.UpdateTimestamp = time.Now().String()
+				cinfo.CreateTimestamp = time.Now().Unix()
+				cinfo.UpdateTimestamp = time.Now().Unix()
 			}
 			cinfos = append(cinfos, cinfo)
 		}

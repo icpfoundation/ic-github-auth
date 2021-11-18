@@ -23,6 +23,6 @@ type CanisterInfo struct {
 	CanisterType    string `json:"type"`
 	Framework       string `json:"framework"`
 	Network         string `json:"network"`
-	CreateTimestamp string `json:"createtimestamp"`
-	UpdateTimestamp string `json:"updateTimestamp"`
+	CreateTimestamp int64  `json:"createtimestamp"`
+	UpdateTimestamp int64  `json:"updateTimestamp"`
 }
