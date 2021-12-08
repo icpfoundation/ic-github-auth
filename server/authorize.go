@@ -19,6 +19,12 @@ func HandleRefreshTokenAPI(r *gin.Engine) {
 
 		grant_type := "refresh_token"
 
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Token,Accept, Connection, User-Agent, Cookie")
+		c.Header("Access-Control-Max-Age", "3628800")
+
 		ret, err := refreshAccessToken(refreshToken, grant_type, clientId, clientSecret)
 		if err != nil {
 			c.JSON(500, gin.H{
