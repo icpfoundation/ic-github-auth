@@ -73,6 +73,7 @@ func setupAuthServer() {
 	server.HandleDeployLogAPI(r)
 	server.HandleCanisterListAPI(r)
 	server.HandleCanisterInfoAPI(r)
+	server.HandleRefreshTokenAPI(r)
 
 	// r.Run("0.0.0.0:9091") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 
