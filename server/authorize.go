@@ -12,7 +12,7 @@ import (
 )
 
 func HandleRefreshTokenAPI(r *gin.Engine) {
-	r.GET("/public/auth", func(c *gin.Context) {
+	r.GET("/public/refresh", func(c *gin.Context) {
 		refreshToken := c.Query("refresh_token")
 		clientId := c.Query("client_id")
 		clientSecret := c.Query("client_secret")
