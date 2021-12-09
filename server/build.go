@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -46,10 +45,6 @@ func HandleDeployLogAPI(r *gin.Engine) {
 		}
 
 		retStr := string(ret)
-
-		if strings.Contains(retStr, "Encounter error while deploy") {
-			c.String(http.StatusNotImplemented, "error happens")
-		}
 
 		c.String(http.StatusOK, retStr)
 	})
