@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +45,13 @@ func HandleDeployLogAPI(r *gin.Engine) {
 			return
 		}
 
-		c.String(http.StatusOK, string(ret))
+		retStr := string(ret)
+
+		if strings.Contains(retStr, "Encounter error while deploy") {
+			c.String(http.StatusNotImplemented, "error happens")
+		}
+
+		c.String(http.StatusOK, retStr)
 	})
 }
 
@@ -143,7 +150,10 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 		case "dfx":
 			go func() error {
 
-				defer f.Close()
+				defer func() {
+					_, _ = f.WriteString("Encounter error while deploy\n")
+					f.Close()
+				}()
 
 				err := deploy.NpmInstall(targetpath, f)
 				if err != nil {
@@ -180,7 +190,10 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			util.Infof("build reactjs for: %s %s", cname, resource)
 
 			go func() error {
-				defer f.Close()
+				defer func() {
+					_, _ = f.WriteString("Encounter error while deploy\n")
+					f.Close()
+				}()
 
 				//npm install and npm run build and dfx deploy
 				cinfos, err := deploy.DeployWithReactjs(targetpath, f, cname, resource, reponame, islocal, framework)
@@ -212,7 +225,10 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			util.Infof("build nuxtjs for: %s %s", cname, resource)
 
 			go func() error {
-				defer f.Close()
+				defer func() {
+					_, _ = f.WriteString("Encounter error while deploy\n")
+					f.Close()
+				}()
 
 				//npm install and npm run build and dfx deploy
 				cinfos, err := deploy.DeployWithReactjs(targetpath, f, cname, resource, reponame, islocal, framework)
@@ -245,7 +261,10 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			util.Infof("build nextjs for: %s %s", cname, resource)
 
 			go func() error {
-				defer f.Close()
+				defer func() {
+					_, _ = f.WriteString("Encounter error while deploy\n")
+					f.Close()
+				}()
 
 				//npm install and npm run build and npm run export and dfx deploy
 				cinfos, err := deploy.DeployWithNext(targetpath, f, cname, resource, reponame, islocal, framework)
