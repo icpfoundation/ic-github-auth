@@ -89,7 +89,7 @@ func restartDfx(targetpath string, islocal bool) error {
 	return nil
 }
 
-func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string) ([]types.CanisterInfo, error) {
+func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string, buildcmd string) ([]types.CanisterInfo, error) {
 
 	var deploycmd *exec.Cmd
 	if islocal {
@@ -98,9 +98,19 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			return nil, err
 		}
 
-		deploycmd = exec.Command("dfx", "deploy")
+		if buildcmd != "" {
+			deploycmd = exec.Command("bash", "-c", buildcmd)
+		} else {
+			deploycmd = exec.Command("dfx", "deploy")
+		}
 	} else {
-		deploycmd = exec.Command("dfx", "deploy", "--network", "ic")
+		if buildcmd != "" {
+			deploycmd = exec.Command("bash", "-c", buildcmd)
+		} else {
+			idx := 9
+			buildcmdIC := buildcmd[:idx] + " --network ic" + buildcmd[idx:]
+			deploycmd = exec.Command("bash", "-c", buildcmdIC)
+		}
 	}
 
 	deploycmd.Dir = targetpath

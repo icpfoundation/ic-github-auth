@@ -73,6 +73,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 		branch := c.Query("branch")
 		location := c.Query("location")
 		principle := c.Query("principle")
+		buildcmd := c.Query("buildcmd")
 
 		if principle == "" {
 			c.String(http.StatusBadRequest, "principle must provide")
@@ -155,7 +156,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					return err
 				}
 
-				cinfos, err := deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework)
+				cinfos, err := deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework, buildcmd)
 				if err != nil {
 					return err
 				}
