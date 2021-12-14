@@ -113,6 +113,8 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		}
 	}
 
+	fmt.Printf("deploycmd: %v\n", deploycmd)
+
 	deploycmd.Dir = targetpath
 
 	stderr, err := deploycmd.StderrPipe()
