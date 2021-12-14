@@ -23,7 +23,7 @@ func DeployWithReactjs(path string, f *os.File, canister string, resource string
 		return nil, err
 	}
 
-	cinfos, err := DeployWithDfx(path, f, repo, islocal, framework)
+	cinfos, err := DeployWithDfx(path, f, repo, islocal, framework, "")
 	if err != nil {
 		return nil, err
 	}

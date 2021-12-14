@@ -84,7 +84,7 @@ var DeployCmd = cli.Command{
 
 		switch framework {
 		case "dfx":
-			cinfos, err := deploy.DeployWithDfx(target, f, repo, islocal, framework)
+			cinfos, err := deploy.DeployWithDfx(target, f, repo, islocal, framework, "")
 			if err != nil {
 				return err
 			}
