@@ -105,7 +105,7 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 		}
 	} else {
 		if buildcmd != "" {
-			idx := 9
+			idx := 10
 			buildcmdIC := buildcmd[:idx] + " --network ic" + buildcmd[idx:]
 			deploycmd = exec.Command("bash", "-c", buildcmdIC)
 		} else {
