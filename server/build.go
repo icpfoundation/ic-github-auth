@@ -147,17 +147,18 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 			go func() error {
 
 				defer func() {
-					_, _ = f.WriteString("Encounter error while deploy\n")
 					f.Close()
 				}()
 
 				err := deploy.NpmInstall(targetpath, f)
 				if err != nil {
+					_, _ = f.WriteString("Encounter error while deploy\n")
 					return err
 				}
 
 				cinfos, err := deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework, buildcmd)
 				if err != nil {
+					_, _ = f.WriteString("Encounter error while deploy\n")
 					return err
 				}
 
@@ -167,9 +168,12 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
+						_, _ = f.WriteString("Encounter error while deploy\n")
 						return err
 					}
 				}
+
+				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
 
 				return nil
 			}()
@@ -187,13 +191,13 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 			go func() error {
 				defer func() {
-					_, _ = f.WriteString("Encounter error while deploy\n")
 					f.Close()
 				}()
 
 				//npm install and npm run build and dfx deploy
 				cinfos, err := deploy.DeployWithReactjs(targetpath, f, cname, resource, reponame, islocal, framework)
 				if err != nil {
+					_, _ = f.WriteString("Encounter error while deploy\n")
 					return err
 				}
 
@@ -203,9 +207,12 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
+						_, _ = f.WriteString("Encounter error while deploy\n")
 						return err
 					}
 				}
+
+				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
 
 				return nil
 			}()
@@ -222,13 +229,13 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 			go func() error {
 				defer func() {
-					_, _ = f.WriteString("Encounter error while deploy\n")
 					f.Close()
 				}()
 
 				//npm install and npm run build and dfx deploy
 				cinfos, err := deploy.DeployWithReactjs(targetpath, f, cname, resource, reponame, islocal, framework)
 				if err != nil {
+					_, _ = f.WriteString("Encounter error while deploy\n")
 					return err
 				}
 
@@ -238,9 +245,12 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
+						_, _ = f.WriteString("Encounter error while deploy\n")
 						return err
 					}
 				}
+
+				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
 
 				return nil
 			}()
@@ -258,22 +268,25 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 			go func() error {
 				defer func() {
-					_, _ = f.WriteString("Encounter error while deploy\n")
 					f.Close()
 				}()
 
 				//npm install and npm run build and npm run export and dfx deploy
 				cinfos, err := deploy.DeployWithNext(targetpath, f, cname, resource, reponame, islocal, framework)
 				if err != nil {
+					_, _ = f.WriteString("Encounter error while deploy\n")
 					return err
 				}
 
 				for _, v := range cinfos {
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
+						_, _ = f.WriteString("Encounter error while deploy\n")
 						return err
 					}
 				}
+
+				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
 
 				return nil
 			}()
