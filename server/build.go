@@ -173,7 +173,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					}
 				}
 
-				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
+				_, _ = f.WriteString(util.Format("Canister deploy to Internet Computer successed\n"))
 
 				return nil
 			}()
@@ -213,7 +213,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					}
 				}
 
-				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
+				_, _ = f.WriteString(util.Format("Canister deploy to Internet Computer successed\n"))
 
 				return nil
 			}()
@@ -251,7 +251,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					}
 				}
 
-				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
+				_, _ = f.WriteString(util.Format("Canister deploy to Internet Computer successed\n"))
 
 				return nil
 			}()
@@ -287,7 +287,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					}
 				}
 
-				_, _ = f.WriteString("Canister deploy to Internet Computer successed\n")
+				_, _ = f.WriteString(util.Format("Canister deploy to Internet Computer successed\n"))
 
 				return nil
 			}()
