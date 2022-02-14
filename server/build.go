@@ -207,7 +207,8 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 					err := Authdb.SaveCanisterInfo(context.TODO(), v)
 					if err != nil {
-						_, _ = f.WriteString("Encounter error while deploy\n")
+						errinfo := fmt.Sprintf("Encounter error while deploy, %s\n", err.Error())
+						_, _ = f.WriteString(errinfo)
 						return err
 					}
 				}

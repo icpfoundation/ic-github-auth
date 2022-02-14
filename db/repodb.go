@@ -24,7 +24,8 @@ func (db *AuthDB) SaveCanisterInfo(ctx context.Context, canisterInfo types.Canis
 	}
 
 	if ishas {
-		return xerrors.Errorf("record already exist for: %s", key.String())
+		fmt.Printf("record already exist for: %s", key.String())
+		return nil
 	}
 
 	info, err := json.Marshal(canisterInfo)
