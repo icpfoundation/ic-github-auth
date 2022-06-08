@@ -109,7 +109,7 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			buildcmdIC := buildcmd[:idx] + " --network ic" + buildcmd[idx:]
 			deploycmd = exec.Command("bash", "-c", buildcmdIC)
 		} else {
-			deploycmd = exec.Command("dfx", "deploy", "--network", "ic", "--with-cycles", "100000000000")
+			deploycmd = exec.Command("dfx", "deploy", "--network", "ic", "--with-cycles", "1001000000000")
 		}
 	}
 
