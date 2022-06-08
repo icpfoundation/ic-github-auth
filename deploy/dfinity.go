@@ -92,13 +92,32 @@ func restartDfx(targetpath string, islocal bool) error {
 func CreateCanisterWith(targetpath string, islocal bool, canistername string) error {
 	//dfx canister --network ic --wallet "$(dfx identity --network ic get-wallet)" create --with-cycles --controller "$(dfx identity get-principal)"
 
-	var getprincipalCmd = exec.Command("bash", "-c", "dfx", "identity", "get-principal")
+	var isexistCmd = exec.Command("dfx", "canister", "--network", "ic", "id", canistername)
+	var a bytes.Buffer
+	isexistCmd.Stderr = &a
+	isexistCmd.Stdout = &a
+	isexistCmd.Dir = targetpath
+	err := isexistCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	var isexist bool
+	if !strings.Contains(a.String(), "Error") {
+		isexist = true
+	}
+
+	if isexist {
+		fmt.Printf("giving canister: %s is exist at network", canistername)
+		return nil
+	}
+
+	var getprincipalCmd = exec.Command("dfx", "identity", "get-principal")
 	var b bytes.Buffer
 	getprincipalCmd.Stderr = &b
 	getprincipalCmd.Stdout = &b
 	getprincipalCmd.Dir = targetpath
-
-	err := getprincipalCmd.Run()
+	err = getprincipalCmd.Run()
 	if err != nil {
 		return err
 	}
@@ -106,7 +125,7 @@ func CreateCanisterWith(targetpath string, islocal bool, canistername string) er
 	fmt.Printf("getprincipalCmd: %v\n", getprincipalCmd)
 	fmt.Printf("b: %v", b.String())
 
-	createCanisterCmd := exec.Command("bash", "-c", "dfx", "canister", "--network", "ic", "create", "--with-cycles", "1001000000000", "--controller", b.String(), canistername)
+	createCanisterCmd := exec.Command("dfx", "canister", "--network", "ic", "create", "--with-cycles", "1001000000000", "--controller", b.String(), canistername)
 	var c bytes.Buffer
 	createCanisterCmd.Stderr = &c
 	createCanisterCmd.Stdout = &c
@@ -119,7 +138,12 @@ func CreateCanisterWith(targetpath string, islocal bool, canistername string) er
 	return nil
 }
 
-func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string, buildcmd string) ([]types.CanisterInfo, error) {
+func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string, buildcmd string, cname string) ([]types.CanisterInfo, error) {
+
+	err := CreateCanisterWith(targetpath, islocal, cname)
+	if err != nil {
+		return nil, err
+	}
 
 	var deploycmd *exec.Cmd
 	if islocal {
@@ -139,7 +163,7 @@ func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, fra
 			buildcmdIC := buildcmd[:idx] + " --network ic" + buildcmd[idx:]
 			deploycmd = exec.Command("bash", "-c", buildcmdIC)
 		} else {
-			deploycmd = exec.Command("dfx", "deploy", "--network", "ic", "--with-cycles", "1001000000000")
+			deploycmd = exec.Command("dfx", "deploy", "--network", "ic", cname)
 		}
 	}
 

@@ -144,6 +144,10 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 
 		switch framework {
 		case "dfx":
+			cname := c.Query("canistername")
+
+			// cname must equal to giving canister name in dfx.json
+
 			go func() error {
 
 				defer func() {
@@ -156,7 +160,7 @@ func HandleTiggerBuildAPI(r *gin.Engine) {
 					return err
 				}
 
-				cinfos, err := deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework, buildcmd)
+				cinfos, err := deploy.DeployWithDfx(targetpath, f, reponame, islocal, framework, buildcmd, cname)
 				if err != nil {
 					_, _ = f.WriteString("Encounter error while deploy\n")
 					return err
