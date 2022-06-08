@@ -89,6 +89,36 @@ func restartDfx(targetpath string, islocal bool) error {
 	return nil
 }
 
+func CreateCanisterWith(targetpath string, islocal bool, canistername string) error {
+	//dfx canister --network ic --wallet "$(dfx identity --network ic get-wallet)" create --with-cycles --controller "$(dfx identity get-principal)"
+
+	var getprincipalCmd = exec.Command("bash", "-c", "dfx", "identity", "get-principal")
+	var b bytes.Buffer
+	getprincipalCmd.Stderr = &b
+	getprincipalCmd.Stdout = &b
+	getprincipalCmd.Dir = targetpath
+
+	err := getprincipalCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("getprincipalCmd: %v\n", getprincipalCmd)
+	fmt.Printf("b: %v", b.String())
+
+	createCanisterCmd := exec.Command("bash", "-c", "dfx", "canister", "--network", "ic", "create", "--with-cycles", "1001000000000", "--controller", b.String(), canistername)
+	var c bytes.Buffer
+	createCanisterCmd.Stderr = &c
+	createCanisterCmd.Stdout = &c
+
+	err = createCanisterCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func DeployWithDfx(targetpath string, f *os.File, repo string, islocal bool, framework string, buildcmd string) ([]types.CanisterInfo, error) {
 
 	var deploycmd *exec.Cmd
